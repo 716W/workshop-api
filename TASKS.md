@@ -1,6 +1,6 @@
 # 🛠 Workshop System Development Plan
 
-Current Status: � Phase 1 COMPLETE → Moving to Phase 2
+Current Status: Phase 2 COMPLETE -> Moving to Phase 3
 
 ## 📌 Rules for AI Agent
 
@@ -17,10 +17,10 @@ Current Status: � Phase 1 COMPLETE → Moving to Phase 2
 
 ## 🏗 Phase 2: Domain Entities (Dependencies: Phase 1)
 
-- [ ] **Create Customer & Vehicle**: Define entities and relationship (1:N).
-- [ ] **Create Mechanic & Part**: Define entities.
-- [ ] **Create JobCard**: The core entity linking Vehicle, Mechanic, and Status.
-- [ ] **EF Core Context**: Register all DbSets and configurations.
+- [x] **Create Customer & Vehicle**: Define entities and relationship (1:N).
+- [x] **Create Mechanic & Part**: Define entities.
+- [x] **Create JobCard**: The core entity linking Vehicle, Mechanic, and Status.
+- [x] **EF Core Context**: Register all DbSets and configurations.
 
 ## ⚙️ Phase 3: Core Logic (Dependencies: Phase 2)
 
