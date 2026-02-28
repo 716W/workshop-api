@@ -69,7 +69,6 @@ public class InventoryService : IInventoryService
 
         // Deduct from inventory
         part.QuantityInStock -= quantity;
-        part.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<Part>().Update(part);
 
         // Record consumption on the job card
@@ -95,7 +94,6 @@ public class InventoryService : IInventoryService
             ?? throw new InvalidOperationException($"Part {partId} not found.");
 
         part.QuantityInStock += quantity;
-        part.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Repository<Part>().Update(part);
         await _unitOfWork.SaveChangesAsync();
