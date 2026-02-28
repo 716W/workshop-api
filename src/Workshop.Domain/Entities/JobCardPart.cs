@@ -1,12 +1,12 @@
+using Workshop.Domain.Common;
+
 namespace Workshop.Domain.Entities;
 
 /// <summary>
 /// Join entity: tracks which parts were consumed on a JobCard and how many.
 /// </summary>
-public class JobCardPart
+public class JobCardPart : BaseAuditableEntity
 {
-    public Guid Id { get; set; }
-
     // FK → JobCard
     public Guid JobCardId { get; set; }
     public JobCard JobCard { get; set; } = null!;

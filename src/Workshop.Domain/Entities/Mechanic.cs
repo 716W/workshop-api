@@ -1,9 +1,9 @@
+using Workshop.Domain.Common;
+
 namespace Workshop.Domain.Entities;
 
-public class Mechanic
+public class Mechanic : BaseAuditableEntity
 {
-    public Guid Id { get; set; }
-
     public string FirstName { get; set; } = string.Empty;
 
     public string LastName { get; set; } = string.Empty;
@@ -13,8 +13,6 @@ public class Mechanic
     public string PhoneNumber { get; set; } = string.Empty;
 
     public bool IsAvailable { get; set; } = true;
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation: One Mechanic can have many JobCards
     public ICollection<JobCard> JobCards { get; set; } = new List<JobCard>();

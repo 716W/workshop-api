@@ -1,9 +1,9 @@
+using Workshop.Domain.Common;
+
 namespace Workshop.Domain.Entities;
 
-public class Invoice
+public class Invoice : BaseAuditableEntity
 {
-    public Guid Id { get; set; }
-
     public string InvoiceNumber { get; set; } = string.Empty;
 
     public decimal PartsCost { get; set; }
@@ -19,8 +19,6 @@ public class Invoice
     public DateTime IssuedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? PaidAt { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // FK → JobCard (1:1)
     public Guid JobCardId { get; set; }

@@ -1,9 +1,9 @@
+using Workshop.Domain.Common;
+
 namespace Workshop.Domain.Entities;
 
-public class Vehicle
+public class Vehicle : BaseAuditableEntity
 {
-    public Guid Id { get; set; }
-
     public string Make { get; set; } = string.Empty;
 
     public string Model { get; set; } = string.Empty;
@@ -13,8 +13,6 @@ public class Vehicle
     public string PlateNumber { get; set; } = string.Empty;
 
     public string VinNumber { get; set; } = string.Empty;
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Foreign Key: belongs to a Customer
     public Guid CustomerId { get; set; }

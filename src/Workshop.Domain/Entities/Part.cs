@@ -1,9 +1,9 @@
+using Workshop.Domain.Common;
+
 namespace Workshop.Domain.Entities;
 
-public class Part
+public class Part : BaseAuditableEntity
 {
-    public Guid Id { get; set; }
-
     public string Name { get; set; } = string.Empty;
 
     public string PartNumber { get; set; } = string.Empty;
@@ -15,10 +15,6 @@ public class Part
     public int QuantityInStock { get; set; }
 
     public int ReorderLevel { get; set; } = 5;
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    public DateTime? UpdatedAt { get; set; }
 
     // Navigation: Parts consumed by JobCards
     public ICollection<JobCardPart> JobCardParts { get; set; } = new List<JobCardPart>();

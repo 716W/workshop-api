@@ -1,3 +1,4 @@
+using Workshop.Domain.Common;
 using Workshop.Domain.Enums;
 
 namespace Workshop.Domain.Entities;
@@ -6,10 +7,8 @@ namespace Workshop.Domain.Entities;
 /// The core entity of the Workshop system.
 /// Tracks the entire lifecycle of a vehicle repair job.
 /// </summary>
-public class JobCard
+public class JobCard : BaseAuditableEntity
 {
-    public Guid Id { get; set; }
-
     public string JobNumber { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
@@ -25,10 +24,6 @@ public class JobCard
     public decimal EstimatedCost { get; set; }
 
     public decimal? FinalCost { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    public DateTime? UpdatedAt { get; set; }
 
     // FK → Vehicle
     public Guid VehicleId { get; set; }
