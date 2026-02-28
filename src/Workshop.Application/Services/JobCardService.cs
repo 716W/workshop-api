@@ -45,7 +45,6 @@ public class JobCardService : IJobCardService
 
         jobCard.MechanicId = mechanicId;
         jobCard.Status = JobCardStatus.Inspection;
-        jobCard.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Repository<JobCard>().Update(jobCard);
         await _unitOfWork.SaveChangesAsync();
@@ -59,7 +58,6 @@ public class JobCardService : IJobCardService
 
         jobCard.InspectionNotes = inspectionNotes;
         jobCard.Status = JobCardStatus.AwaitingApproval;
-        jobCard.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Repository<JobCard>().Update(jobCard);
         await _unitOfWork.SaveChangesAsync();
@@ -154,7 +152,6 @@ public class JobCardService : IJobCardService
     private async Task<JobCard> TransitionAsync(JobCard jobCard, JobCardStatus newStatus)
     {
         jobCard.Status = newStatus;
-        jobCard.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Repository<JobCard>().Update(jobCard);
         await _unitOfWork.SaveChangesAsync();
