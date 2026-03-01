@@ -1,6 +1,6 @@
 ﻿# Workshop System Development Plan
 
-Current Status: Phase 4 (Scenario 3 - Approval & Inventory Integration) IN PROGRESS
+Current Status: Phase 5 (Infrastructure Wiring & MySQL Integration) COMPLETE ✅
 
 ## Rules for AI Agent
 
@@ -66,3 +66,11 @@ Current Status: Phase 4 (Scenario 3 - Approval & Inventory Integration) IN PROGR
 - [x] **Event Handler (Inventory/Purchasing)**: Create `AllocatePartsEventHandler` implementing `INotificationHandler<QuotationApprovedEvent>`. Loop through Part items, deduct stock if available, create `PurchaseNeed` for out-of-stock parts.
 - [x] **EF Core + Migration**: Add `PurchaseNeed` DbSet, update `QuotationConfiguration` (Status), update `InvoiceConfiguration` (nullable FK), add `PurchaseNeedConfiguration`. Run migration `Phase4_ApprovalRejection`.
 - [x] **API Controller**: Add `POST /api/quotations/{id}/approve` and `POST /api/quotations/{id}/reject` in a new `QuotationsController`.
+
+## ⚙️ Phase 5: Infrastructure Wiring & MySQL Integration
+
+- [x] **Database Setup**: Install `Pomelo.EntityFrameworkCore.MySql` in the Infrastructure layer. Update `appsettings.json` and `appsettings.Development.json` with a standard MySQL connection string (e.g., `Server=localhost;Database=WorkshopDb;User=root;Password=;`).
+- [x] **Infrastructure DI**: Refactored `DependencyInjection.cs` in Infrastructure → renamed to `AddInfrastructureServices`. Registers `DbContext` (Pomelo MySQL, pinned 8.0.36), `AuditableEntityInterceptor` singleton, generic `IRepository<>` and `IUnitOfWork`.
+- [x] **Application DI**: Refactored `DependencyInjection.cs` in Application → renamed to `AddApplicationServices`. Registers MediatR (auto-discover from assembly), FluentValidation validators (assembly scan via `AddValidatorsFromAssemblyContaining<>`), `IServiceRequestFactory`, all CQRS command handlers.
+- [x] **API Wiring & Middleware**: Updated `Program.cs` — calls `AddApplicationServices()` and `AddInfrastructureServices()`. Global `IExceptionHandler` and `AddProblemDetails()` registered. `AddFluentValidationAutoValidation()` kept in API layer. Pipeline: `UseExceptionHandler() → UseHttpsRedirection() → UseAuthorization() → MapControllers()`.
+- [x] **Migrations**: Removed SQL Server migration files, added `IDesignTimeDbContextFactory` for offline scaffolding. Ran `dotnet ef migrations add InitialCreate` ✅. Run `dotnet ef database update` after updating credentials in appsettings.

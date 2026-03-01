@@ -10,19 +10,32 @@ namespace Workshop.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        // Register the audit interceptor as a singleton (stateless – safe to share).
+        // ── Audit interceptor (stateless singleton) ───────────────────────────
         services.AddSingleton<AuditableEntityInterceptor>();
 
-        // EF Core – inject the interceptor via the options builder.
+        // ── EF Core – Pomelo MySQL ────────────────────────────────────────────
         services.AddDbContext<WorkshopDbContext>((sp, options) =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException(
+                    "Connection string 'DefaultConnection' is not configured.");
+
+            options.UseMySql(
+                connectionString,
+                new MySqlServerVersion(new Version(8, 0, 36)),
+                mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorNumbersToAdd: null));
+
             options.AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
         });
 
-        // Repositories
+        // ── Repositories ──────────────────────────────────────────────────────
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
