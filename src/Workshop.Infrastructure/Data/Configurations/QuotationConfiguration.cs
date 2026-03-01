@@ -24,6 +24,11 @@ public sealed class QuotationConfiguration : IEntityTypeConfiguration<Quotation>
         builder.Property(q => q.Notes)
                .HasMaxLength(2000);
 
+        // ── Status ────────────────────────────────────────────────────────────
+        builder.Property(q => q.Status)
+               .IsRequired()
+               .HasConversion<int>();
+
         // ── Items (1:N) ────────────────────────────────────────────────────────
         builder.HasMany(q => q.Items)
                .WithOne(i => i.Quotation)
