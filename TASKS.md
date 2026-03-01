@@ -1,6 +1,6 @@
 ﻿# Workshop System Development Plan
 
-Current Status: Phase 3 (Scenario 2) COMPLETE
+Current Status: Phase 4 (Scenario 3 - Approval & Inventory Integration) IN PROGRESS
 
 ## Rules for AI Agent
 
@@ -56,3 +56,13 @@ Current Status: Phase 3 (Scenario 2) COMPLETE
 - [x] **DTOs & Validators**: Create `CreateQuotationDto` and `QuotationItemDto`. Use FluentValidation to ensure `Quantity` >= 1, `UnitPrice` >= 0, and the list of items is not empty.
 - [x] **CQRS Command**: Create `GenerateQuotationCommand` and its Handler. The handler must: retrieve the ServiceRequest, create the Quotation, calculate total costs, update the request status, and save changes via the repository. Return a Success `Result<Guid>` with the Quotation ID.
 - [x] **API Controller**: Add a `POST /api/requests/{id}/quotations` endpoint in `OperationsController` to trigger this command.
+
+## 🔄 Phase 4: Scenario 3 - Approval & Inventory Integration
+
+- [x] **Domain Updates**: Add `QuotationStatus` enum (Pending, Approved, Rejected). Add `Status` to `Quotation`. Create `PurchaseNeed` entity (PartName, Quantity, ServiceRequestId, DateRequested). Extend `ServiceRequestStatus` with `In_Progress` and `Closed_Rejected`. Create Domain Event `QuotationApprovedEvent` (implements `INotification`). Add `ApproveQuotation()` and `RejectQuotation()` behaviours to `ServiceRequest`. Refactor `Invoice` to support optional `ServiceRequestId` FK.
+- [x] **Add MediatR**: Add MediatR 12.x NuGet package to Application project and register in DI.
+- [x] **Reject Command**: Create `RejectQuotationCommand` and Handler. Change `ServiceRequest` status to `Closed_Rejected`, auto-generate pending `Invoice` for "Inspection Fee" (fixed 150.00).
+- [x] **Approve Command**: Create `ApproveQuotationCommand` and Handler. Change `ServiceRequest` status to `In_Progress`, mark Quotation as `Approved`, publish `QuotationApprovedEvent` via MediatR.
+- [x] **Event Handler (Inventory/Purchasing)**: Create `AllocatePartsEventHandler` implementing `INotificationHandler<QuotationApprovedEvent>`. Loop through Part items, deduct stock if available, create `PurchaseNeed` for out-of-stock parts.
+- [x] **EF Core + Migration**: Add `PurchaseNeed` DbSet, update `QuotationConfiguration` (Status), update `InvoiceConfiguration` (nullable FK), add `PurchaseNeedConfiguration`. Run migration `Phase4_ApprovalRejection`.
+- [x] **API Controller**: Add `POST /api/quotations/{id}/approve` and `POST /api/quotations/{id}/reject` in a new `QuotationsController`.
