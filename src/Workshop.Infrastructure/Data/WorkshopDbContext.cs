@@ -18,6 +18,8 @@ public class WorkshopDbContext : DbContext
     public DbSet<JobCardPart> JobCardParts => Set<JobCardPart>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
+    public DbSet<Quotation> Quotations => Set<Quotation>();
+    public DbSet<QuotationItem> QuotationItems => Set<QuotationItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
