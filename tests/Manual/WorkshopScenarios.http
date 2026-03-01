@@ -1,0 +1,149 @@
+### ============================================================
+###  Workshop Management System — Manual Scenario Test Suite
+###  Run these requests in order using the VS Code REST Client
+###  extension or JetBrains HTTP Client.
+###
+###  Scenario Coverage:
+###    Scenario 1 — Customer Check-In & Service Request Creation
+###    Scenario 2 — Workshop Inspection & Quotation Generation
+### ============================================================
+
+@baseUrl = http://localhost:5085
+
+# -------------------------------------------------------------
+# SEED DATA (replace with real IDs from your database)
+# -------------------------------------------------------------
+# These GUIDs must exist in your database before running the
+# scenarios. Seed them via your DbContext or a migration.
+# -------------------------------------------------------------
+@customerId  = 3f5e1d8a-4b2c-4f6e-9a7d-1b3c5e7f9a2d
+@mechanicId  = 7a2b4c6d-8e0f-4a1b-9c3d-5e7f9a1b3c5e
+@vehicleId   = 1b3c5e7f-9a2d-4f6e-8b0c-2d4f6a8c0e2f
+
+# After running Scenario 1, copy the returned `id` field here:
+@serviceRequestId = 00000000-0000-0000-0000-000000000000
+
+
+### ============================================================
+###  SCENARIO 1 — Customer Check-In / Service Request Creation
+### ============================================================
+#
+#  Business Context:
+#    A customer arrives at the reception desk with their vehicle.
+#    The front-desk operator logs a Repair service request.
+#    The system uses the Factory Pattern to instantiate a
+#    RepairRequest entity and persists it with a status of "Open".
+#
+#  Expected Result:
+#    HTTP 201 Created
+#    Body contains: { id, requestType, status, customerId, ... }
+#
+#  Endpoint: POST /api/Reception/create
+#  Controller: ReceptionController
+#  Handler:   CreateServiceRequestCommandHandler
+# ---------------------------------------------------------------
+
+POST {{baseUrl}}/api/Reception/create
+Content-Type: application/json
+
+{
+  "requestType": 0,
+  "customerId": "{{customerId}}",
+  "mechanicId": "{{mechanicId}}",
+  "vehicleId": "{{vehicleId}}",
+  "price": 850.00,
+  "commissionType": 1,
+  "commissionValue": 10,
+  "description": "Customer reports engine overheating and a knocking sound at idle. Full diagnostic and repair required."
+}
+
+###
+# NOTE: Copy the `id` from the 201 response above and paste it
+# into the @serviceRequestId variable at the top of this file
+# before running Scenario 2.
+###
+
+
+### ============================================================
+###  SCENARIO 2 — Workshop Inspection & Quotation Generation
+### ============================================================
+#
+#  Business Context:
+#    The assigned mechanic inspects the vehicle and identifies
+#    the required parts and labour. They generate a formal
+#    quotation for the customer's approval.
+#
+#    The system:
+#      1. Retrieves the existing ServiceRequest.
+#      2. Creates a Quotation with the provided line items.
+#      3. Calculates each item's TotalPrice = Quantity × UnitPrice.
+#      4. Transitions the ServiceRequest status to
+#         "PendingCustomerApproval".
+#      5. Returns the new Quotation ID and grand total.
+#
+#  Expected Result:
+#    HTTP 201 Created
+#    Body contains: { quotationId, grandTotal, serviceRequestId, ... }
+#
+#  Endpoint: POST /api/requests/{id}/quotations
+#  Controller: OperationsController
+#  Handler:   GenerateQuotationCommandHandler
+# ---------------------------------------------------------------
+
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/quotations
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "type": 0,
+      "description": "Radiator Cap",
+      "quantity": 1,
+      "unitPrice": 45.00
+    },
+    {
+      "type": 0,
+      "description": "Coolant (5 Litre)",
+      "quantity": 2,
+      "unitPrice": 75.00
+    },
+    {
+      "type": 0,
+      "description": "Serpentine Belt",
+      "quantity": 1,
+      "unitPrice": 120.00
+    },
+    {
+      "type": 1,
+      "description": "Engine Cooling System Flush & Refill",
+      "quantity": 2,
+      "unitPrice": 95.00
+    },
+    {
+      "type": 1,
+      "description": "Engine Idle Diagnostic & Timing Check",
+      "quantity": 1,
+      "unitPrice": 150.00
+    }
+  ],
+  "notes": "Radiator cap was holding pressure at 12 psi (below spec). Belt showed visible cracking. Full coolant system flush recommended every 40,000 km thereafter."
+}
+
+### ============================================================
+###  END OF SCENARIO TEST SUITE
+### ============================================================
+#
+#  QuotationItemType enum values:
+#    0 = Part   (physical spare part)
+#    1 = Labor  (workshop labour hours)
+#
+#  RequestType enum values:
+#    0 = Repair
+#    1 = PurchaseOnly
+#    2 = InspectionOnly
+#
+#  CommissionType enum values:
+#    0 = Fixed      (flat monetary amount)
+#    1 = Percentage (% of total price)
+#
+### ============================================================
