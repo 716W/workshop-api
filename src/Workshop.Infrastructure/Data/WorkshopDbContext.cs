@@ -17,6 +17,7 @@ public class WorkshopDbContext : DbContext
     public DbSet<JobCard> JobCards => Set<JobCard>();
     public DbSet<JobCardPart> JobCardParts => Set<JobCardPart>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
