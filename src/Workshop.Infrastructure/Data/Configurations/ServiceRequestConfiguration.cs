@@ -13,43 +13,56 @@ namespace Workshop.Infrastructure.Data.Configurations;
 /// </summary>
 public sealed class ServiceRequestConfiguration : IEntityTypeConfiguration<ServiceRequest>
 {
-    public void Configure(EntityTypeBuilder<ServiceRequest> builder)
-    {
-        builder.ToTable("ServiceRequests");
+       public void Configure(EntityTypeBuilder<ServiceRequest> builder)
+       {
+              builder.ToTable("ServiceRequests");
 
-        builder.HasKey(r => r.Id);
+              builder.HasKey(r => r.Id);
 
-        // ── Discriminator (Table-Per-Hierarchy) ───────────────────────────
-        builder.HasDiscriminator(r => r.RequestType)
-               .HasValue<RepairRequest>(RequestType.Repair)
-               .HasValue<PurchaseRequest>(RequestType.PurchaseOnly)
-               .HasValue<InspectionRequest>(RequestType.InspectionOnly);
+              // ── Discriminator (Table-Per-Hierarchy) ───────────────────────────
+              builder.HasDiscriminator(r => r.RequestType)
+                     .HasValue<RepairRequest>(RequestType.Repair)
+                     .HasValue<PurchaseRequest>(RequestType.PurchaseOnly)
+                     .HasValue<InspectionRequest>(RequestType.InspectionOnly);
 
-        // ── Base columns ──────────────────────────────────────────────────
-        builder.Property(r => r.Price).HasPrecision(18, 2).IsRequired();
-        builder.Property(r => r.Date).IsRequired();
-        builder.Property(r => r.CommissionType).HasConversion<string>().HasMaxLength(20);
-        builder.Property(r => r.CommissionValue).HasPrecision(18, 4);
-        builder.Property(r => r.RequestType).HasConversion<string>().HasMaxLength(30);
+              // ── Base columns ──────────────────────────────────────────────────
+              builder.Property(r => r.Price).HasPrecision(18, 2).IsRequired();
+              builder.Property(r => r.Date).IsRequired();
+              builder.Property(r => r.CommissionType).HasConversion<string>().HasMaxLength(20);
+              builder.Property(r => r.CommissionValue).HasPrecision(18, 4);
+              builder.Property(r => r.RequestType).HasConversion<string>().HasMaxLength(30);
 
-        // CommissionAmount is computed in memory — not mapped to a column.
-        builder.Ignore(r => r.CommissionAmount);
+              // CommissionAmount is computed in memory — not mapped to a column.
+              builder.Ignore(r => r.CommissionAmount);
 
-        // ── Common relationships ──────────────────────────────────────────
-        builder.HasOne(r => r.Customer)
-               .WithMany()
-               .HasForeignKey(r => r.CustomerId)
-               .OnDelete(DeleteBehavior.Restrict);
+              // ── Status ────────────────────────────────────────────────────────────
+              builder.Property(r => r.Status)
+                     .HasConversion<string>()
+                     .HasMaxLength(40)
+                     .HasDefaultValue(Workshop.Domain.Enums.ServiceRequestStatus.Open)
+                     .IsRequired();
 
-        builder.HasOne(r => r.Mechanic)
-               .WithMany()
-               .HasForeignKey(r => r.MechanicId)
-               .OnDelete(DeleteBehavior.Restrict);
+              // ── Quotation (1:0..1) ────────────────────────────────────────────────
+              builder.HasOne(r => r.Quotation)
+                     .WithOne(q => q.ServiceRequest)
+                     .HasForeignKey<Workshop.Domain.Entities.Quotation>(q => q.ServiceRequestId)
+                     .OnDelete(DeleteBehavior.Cascade);
 
-        // ── Subtype string properties max-length constraints ──────────────
-        // EF Core creates nullable columns automatically for each subtype property.
-        builder.Property<string>(nameof(RepairRequest.RepairDescription)).HasMaxLength(500);
-        builder.Property<string>(nameof(PurchaseRequest.PurchaseDescription)).HasMaxLength(500);
-        builder.Property<string>(nameof(InspectionRequest.InspectionNotes)).HasMaxLength(2000);
-    }
+              // ── Common relationships ──────────────────────────────────────────
+              builder.HasOne(r => r.Customer)
+                     .WithMany()
+                     .HasForeignKey(r => r.CustomerId)
+                     .OnDelete(DeleteBehavior.Restrict);
+
+              builder.HasOne(r => r.Mechanic)
+                     .WithMany()
+                     .HasForeignKey(r => r.MechanicId)
+                     .OnDelete(DeleteBehavior.Restrict);
+
+              // ── Subtype string properties max-length constraints ──────────────
+              // EF Core creates nullable columns automatically for each subtype property.
+              builder.Property<string>(nameof(RepairRequest.RepairDescription)).HasMaxLength(500);
+              builder.Property<string>(nameof(PurchaseRequest.PurchaseDescription)).HasMaxLength(500);
+              builder.Property<string>(nameof(InspectionRequest.InspectionNotes)).HasMaxLength(2000);
+       }
 }
