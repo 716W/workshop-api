@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Workshop.Application.Commands;
 using Workshop.Application.Handlers;
@@ -26,6 +27,21 @@ public static class DependencyInjection
         services.AddScoped<
             ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult>,
             GenerateQuotationCommandHandler>();
+
+        // ── CQRS Command Handlers (Phase 4 - Scenario 3) ─────────────────────
+        services.AddScoped<
+            ICommandHandler<ApproveQuotationCommand, ApproveQuotationResult>,
+            ApproveQuotationCommandHandler>();
+
+        services.AddScoped<
+            ICommandHandler<RejectQuotationCommand, RejectQuotationResult>,
+            RejectQuotationCommandHandler>();
+
+        // ── MediatR (Phase 4 - Domain Events) ────────────────────────────────
+        // Registers IMediator and auto-discovers all INotificationHandler<T>
+        // implementations (e.g. AllocatePartsEventHandler) in this assembly.
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssemblyContaining<AllocatePartsEventHandler>());
 
         return services;
     }
