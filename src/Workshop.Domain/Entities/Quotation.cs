@@ -1,6 +1,8 @@
 using Workshop.Domain.Common;
+using Workshop.Domain.Enums;
 
 namespace Workshop.Domain.Entities;
+
 
 /// <summary>
 /// A cost estimate presented to the customer before work begins.
@@ -34,6 +36,11 @@ public sealed class Quotation : BaseAuditableEntity
     /// <summary>Optional technician remarks accompanying the quotation.</summary>
     public string? Notes { get; private set; }
 
+    // ── Status ────────────────────────────────────────────────────────────────
+
+    /// <summary>Current decision state of this quotation (Pending → Approved | Rejected).</summary>
+    public QuotationStatus Status { get; private set; } = QuotationStatus.Pending;
+
     // ── Constructors ──────────────────────────────────────────────────────────
 
     /// <summary>EF Core materialisation constructor.</summary>
@@ -52,4 +59,18 @@ public sealed class Quotation : BaseAuditableEntity
         _items.AddRange(items);
         GrandTotal = _items.Sum(i => i.TotalPrice);
     }
+
+    // ── Domain Behaviours ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Transitions the quotation to the <see cref="QuotationStatus.Approved"/> state.
+    /// Called by <see cref="ServiceRequest.ApproveQuotation"/>.
+    /// </summary>
+    public void Approve() => Status = QuotationStatus.Approved;
+
+    /// <summary>
+    /// Transitions the quotation to the <see cref="QuotationStatus.Rejected"/> state.
+    /// Called by <see cref="ServiceRequest.RejectQuotation"/>.
+    /// </summary>
+    public void Reject() => Status = QuotationStatus.Rejected;
 }
