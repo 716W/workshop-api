@@ -1,5 +1,6 @@
 using Workshop.Domain.Common;
 using Workshop.Domain.Enums;
+using Workshop.Domain.Exceptions;
 
 namespace Workshop.Domain.Entities;
 
@@ -47,6 +48,19 @@ public abstract class ServiceRequest : BaseAuditableEntity
     // ── Discriminator (set by derived constructors) ───────────────────────────
     public RequestType RequestType { get; protected set; }
 
+    // ── Status ────────────────────────────────────────────────────────────────
+
+    /// <summary>Current life-cycle state of this service request.</summary>
+    public ServiceRequestStatus Status { get; protected set; } = ServiceRequestStatus.Open;
+
+    // ── Quotation (1:0..1) ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// The quotation attached to this request, if one has been generated.
+    /// Null when the request is still in the <see cref="ServiceRequestStatus.Open"/> state.
+    /// </summary>
+    public Quotation? Quotation { get; protected set; }
+
     /// <summary>EF Core requires a parameterless constructor for materialisation.</summary>
     protected ServiceRequest() { }
 
@@ -66,5 +80,30 @@ public abstract class ServiceRequest : BaseAuditableEntity
         CommissionValue = commissionValue;
         RequestType = requestType;
         Date = DateTime.UtcNow;
+    }
+
+    // ── Domain Behaviours ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Attaches a <see cref="Entities.Quotation"/> to this request and transitions the
+    /// status to <see cref="ServiceRequestStatus.PendingCustomerApproval"/>.
+    /// </summary>
+    /// <exception cref="BusinessRuleException">
+    /// Thrown when the request is already <see cref="ServiceRequestStatus.Closed"/>
+    /// or <see cref="ServiceRequestStatus.Cancelled"/> — terminal states that forbid
+    /// any further modifications.
+    /// </exception>
+    public void AttachQuotation(Quotation quotation)
+    {
+        if (Status == ServiceRequestStatus.Closed)
+            throw new BusinessRuleException(
+                $"Cannot attach a quotation to a closed service request (Id: {Id}).");
+
+        if (Status == ServiceRequestStatus.Cancelled)
+            throw new BusinessRuleException(
+                $"Cannot attach a quotation to a cancelled service request (Id: {Id}).");
+
+        Quotation = quotation;
+        Status = ServiceRequestStatus.PendingCustomerApproval;
     }
 }
