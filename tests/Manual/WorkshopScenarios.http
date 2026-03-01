@@ -1,0 +1,111 @@
+### ============================================================
+### Workshop Management System — Manual Scenario Tests
+### ============================================================
+### Tool:  VS Code REST Client / JetBrains HTTP Client
+### Docs:  https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+###
+### Run order: Execute the requests TOP → BOTTOM.
+### After Step 1 succeeds, copy the returned `requestId` from
+### the response body and paste it into the @serviceRequestId
+### variable below before executing Step 2.
+### ============================================================
+
+@baseUrl        = http://localhost:5085
+@contentType    = application/json
+
+# ── Seed IDs (replace with real GUIDs from your database) ────────────────────
+@customerId     = 11111111-1111-1111-1111-111111111111
+@mechanicId     = 22222222-2222-2222-2222-222222222222
+@vehicleId      = 33333333-3333-3333-3333-333333333333
+
+# ── Captured from Step 1 response — fill in before running Step 2 ─────────────
+@serviceRequestId = 00000000-0000-0000-0000-000000000000
+
+
+### ============================================================
+### SCENARIO 1: Customer Check-In & Service Request Creation
+### Business Flow:
+###   A customer drives in with a vehicle for repair work.
+###   The receptionist logs the request, assigns an available
+###   mechanic, and records the agreed service price.
+###   The factory pattern will detect RequestType = Repair and
+###   instantiate a RepairRequest entity automatically.
+### ============================================================
+
+### [STEP 1] POST — Create a new Repair Service Request
+# Expected: 201 Created
+# Response body will contain the new ServiceRequest's `requestId`.
+# Copy that value into @serviceRequestId above before running Step 2.
+
+POST {{baseUrl}}/api/reception/create
+Content-Type: {{contentType}}
+
+{
+  "requestType": 0,
+  "customerId": "{{customerId}}",
+  "mechanicId": "{{mechanicId}}",
+  "vehicleId": "{{vehicleId}}",
+  "price": 350.00,
+  "commissionType": 1,
+  "commissionValue": 10,
+  "description": "Customer reports engine knocking noise and difficulty starting. Full engine diagnostic and repair requested."
+}
+
+###
+
+
+### ============================================================
+### SCENARIO 2: Inspection & Quotation Generation
+### Business Flow:
+###   After the mechanic inspects the vehicle, they identify the
+###   required parts and labour. A formal quotation is generated
+###   and attached to the existing ServiceRequest. The request
+###   status transitions automatically to PendingCustomerApproval.
+###
+### ⚠ Pre-condition: @serviceRequestId must be set (from Step 1).
+### ============================================================
+
+### [STEP 2] POST — Generate a Quotation for the Service Request
+# Expected: 201 Created
+# Response body will contain the new Quotation's `quotationId` and `grandTotal`.
+
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/quotations
+Content-Type: {{contentType}}
+
+{
+  "items": [
+    {
+      "type": 0,
+      "description": "Engine Air Filter (OEM)",
+      "quantity": 1,
+      "unitPrice": 45.00
+    },
+    {
+      "type": 0,
+      "description": "Spark Plugs — Set of 4 (NGK Iridium)",
+      "quantity": 4,
+      "unitPrice": 18.50
+    },
+    {
+      "type": 0,
+      "description": "Engine Oil — 5W-30 Synthetic (5L)",
+      "quantity": 2,
+      "unitPrice": 38.00
+    },
+    {
+      "type": 1,
+      "description": "Full Engine Diagnostic & Compression Test",
+      "quantity": 1,
+      "unitPrice": 80.00
+    },
+    {
+      "type": 1,
+      "description": "Spark Plugs Replacement Labour",
+      "quantity": 2,
+      "unitPrice": 30.00
+    }
+  ],
+  "notes": "Engine knock caused by worn spark plugs and dirty air filter. Oil change also recommended. All parts are OEM or equivalent grade. Estimated completion: 3 working hours."
+}
+
+###
