@@ -1,6 +1,6 @@
 ﻿# Workshop System Development Plan
 
-Current Status: Phase 2 (Scenario 1) COMPLETE
+Current Status: Phase 3 (Scenario 2) COMPLETE
 
 ## Rules for AI Agent
 
@@ -48,3 +48,11 @@ Current Status: Phase 2 (Scenario 1) COMPLETE
 
 - [x] **Controllers**: Create Endpoints for JobCards.
 - [x] **DTOs & Validation**: Use FluentValidation.
+
+## 📋 Phase 3: Scenario 2 - Inspection & Quotation Generation
+
+- [x] **Domain Entities**: Create `Quotation` and `QuotationItem` entities. A `Quotation` belongs to a `ServiceRequest`. A `QuotationItem` has a `Type` (Enum: Part or Labor), `Description`, `Quantity`, `UnitPrice`, and `TotalPrice`.
+- [x] **Domain Logic**: Add a behavior (method) in `ServiceRequest` to attach a `Quotation` and transition its status to `Pending_Customer_Approval`. Ensure quotations cannot be added to closed or cancelled requests.
+- [x] **DTOs & Validators**: Create `CreateQuotationDto` and `QuotationItemDto`. Use FluentValidation to ensure `Quantity` >= 1, `UnitPrice` >= 0, and the list of items is not empty.
+- [x] **CQRS Command**: Create `GenerateQuotationCommand` and its Handler. The handler must: retrieve the ServiceRequest, create the Quotation, calculate total costs, update the request status, and save changes via the repository. Return a Success `Result<Guid>` with the Quotation ID.
+- [x] **API Controller**: Add a `POST /api/requests/{id}/quotations` endpoint in `OperationsController` to trigger this command.
