@@ -22,6 +22,11 @@ public static class DependencyInjection
             ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult>,
             CreateServiceRequestCommandHandler>();
 
+        // ── CQRS Command Handlers (Phase 3 - Scenario 2) ─────────────────────
+        services.AddScoped<
+            ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult>,
+            GenerateQuotationCommandHandler>();
+
         return services;
     }
 }
