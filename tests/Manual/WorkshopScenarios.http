@@ -147,3 +147,23 @@ Content-Type: application/json
 #    1 = Percentage (% of total price)
 #
 ### ============================================================
+
+### ============================================================
+###  SCENARIO 3 — Customer Approval / Rejection
+### ============================================================
+
+# After running Scenario 2, copy the returned `quotationId` here:
+@quotationId = 00000000-0000-0000-0000-000000000000
+
+# Endpoint: POST /api/Quotations/{id}/approve
+# Expected Result: 200 OK
+POST {{baseUrl}}/api/Quotations/{{quotationId}}/approve
+Content-Type: application/json
+
+###
+
+# Endpoint: POST /api/Quotations/{id}/reject
+# Expected Result: 200 OK
+POST {{baseUrl}}/api/Quotations/{{quotationId}}/reject
+Content-Type: application/json
+
