@@ -12,8 +12,8 @@ using Workshop.Infrastructure.Data;
 namespace Workshop.Infrastructure.Migrations
 {
     [DbContext(typeof(WorkshopDbContext))]
-    [Migration("20260404081033_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260404084923_AddPurchaseNeeds")]
+    partial class AddPurchaseNeeds
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -73,8 +73,8 @@ namespace Workshop.Infrastructure.Migrations
 
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<bool>("IsPaid")
                         .HasColumnType("tinyint(1)");
@@ -82,7 +82,7 @@ namespace Workshop.Infrastructure.Migrations
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("JobCardId")
+                    b.Property<Guid?>("JobCardId")
                         .HasColumnType("char(36)");
 
                     b.Property<decimal>("LaborCost")
@@ -95,6 +95,9 @@ namespace Workshop.Infrastructure.Migrations
                     b.Property<decimal>("PartsCost")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("ServiceRequestId")
+                        .HasColumnType("char(36)");
 
                     b.Property<decimal>("TaxAmount")
                         .HasPrecision(18, 2)
@@ -114,6 +117,8 @@ namespace Workshop.Infrastructure.Migrations
 
                     b.HasIndex("JobCardId")
                         .IsUnique();
+
+                    b.HasIndex("ServiceRequestId");
 
                     b.ToTable("Invoices");
                 });
@@ -299,6 +304,44 @@ namespace Workshop.Infrastructure.Migrations
                     b.ToTable("Parts");
                 });
 
+            modelBuilder.Entity("Workshop.Domain.Entities.PurchaseNeed", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateRequested")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("JobCardId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("PartName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ServiceRequestId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobCardId");
+
+                    b.HasIndex("ServiceRequestId");
+
+                    b.ToTable("PurchaseNeeds", (string)null);
+                });
+
             modelBuilder.Entity("Workshop.Domain.Entities.Quotation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -318,6 +361,9 @@ namespace Workshop.Infrastructure.Migrations
 
                     b.Property<Guid>("ServiceRequestId")
                         .HasColumnType("char(36)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -537,10 +583,16 @@ namespace Workshop.Infrastructure.Migrations
                     b.HasOne("Workshop.Domain.Entities.JobCard", "JobCard")
                         .WithOne("Invoice")
                         .HasForeignKey("Workshop.Domain.Entities.Invoice", "JobCardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Workshop.Domain.Entities.ServiceRequest", "ServiceRequest")
+                        .WithMany()
+                        .HasForeignKey("ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("JobCard");
+
+                    b.Navigation("ServiceRequest");
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.JobCard", b =>
@@ -578,6 +630,20 @@ namespace Workshop.Infrastructure.Migrations
                     b.Navigation("JobCard");
 
                     b.Navigation("Part");
+                });
+
+            modelBuilder.Entity("Workshop.Domain.Entities.PurchaseNeed", b =>
+                {
+                    b.HasOne("Workshop.Domain.Entities.JobCard", null)
+                        .WithMany()
+                        .HasForeignKey("JobCardId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Workshop.Domain.Entities.ServiceRequest", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Quotation", b =>
