@@ -42,5 +42,11 @@ public enum ServiceRequestStatus
     QC_Failed = 11,
 
     /// <summary>QC passed, vehicle is ready to be invoiced and delivered.</summary>
-    Ready_For_Invoicing = 12
+    Ready_For_Invoicing = 12,
+
+    /// <summary>Invoice object has been generated, awaiting customer payment.</summary>
+    Pending_Payment = 13,
+
+    /// <summary>Invoice paid in full, vehicle is ready for final customer release.</summary>
+    Ready_For_Release = 14
 }

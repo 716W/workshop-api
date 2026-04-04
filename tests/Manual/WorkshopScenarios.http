@@ -246,3 +246,43 @@ Content-Type: application/json
   "isPassed": true,
   "notes": "Pressure holding steady. Engine sounds good. Ready for billing."
 }
+
+### ============================================================
+###  SCENARIO 6 — Invoicing & Payment
+### ============================================================
+#
+#  Business Context:
+#    The QC has passed, and the vehicle is 'Ready_For_Invoicing'.
+#    We will now generate the final invoice, transition the status
+#    to 'Pending_Payment', and proceed to pay the invoice in full.
+#
+#  Endpoint: POST /api/requests/{id}/invoice
+#  Controller: BillingController
+#  Handler:   GenerateInvoiceCommandHandler
+# ---------------------------------------------------------------
+
+# Generate the invoice for the service request
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/invoice
+Content-Type: application/json
+
+###
+# NOTE: Copy the `invoiceId` from the 200 OK response above
+# and paste it into the @invoiceId variable below to process payment
+###
+
+@invoiceId = 00000000-0000-0000-0000-000000000000
+
+# Endpoint: POST /api/invoices/{id}/pay
+# Controller: BillingController
+# Handler:   ProcessPaymentCommandHandler
+# ---------------------------------------------------------------
+
+# Pay the generated invoice in full (change amount to match total amount)
+POST {{baseUrl}}/api/invoices/{{invoiceId}}/pay
+Content-Type: application/json
+
+{
+  "amount": 1000.00,
+  "paymentMethod": 1,
+  "transactionReference": "TXN_CARD_0991823"
+}

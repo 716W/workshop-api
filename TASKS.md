@@ -1,6 +1,6 @@
 ﻿# Workshop System Development Plan
 
-Current Status: Phase 5: Scenario 3 - Approval, Rejection & Inventory
+Current Status: Phase 8: Scenario 6 - Invoicing & Payment
 
 ## Rules for AI Agent
 
@@ -85,3 +85,11 @@ Current Status: Phase 5: Scenario 3 - Approval, Rejection & Inventory
   - Call the `UpdateStatus` method (from Phase 6) to ensure the status change and notes are logged in `ServiceRequestStatusHistory`.
 - [x] **API Controller**: Add `POST /api/requests/{id}/qc` in the `OperationsController`.
 - [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a QC scenario (e.g., failing it first with a note, then passing it).
+
+## 💳 Phase 8: Scenario 6 - Invoicing & Payment
+- [x] **Domain Entities**: Create `Invoice` (Id, ServiceRequestId, SubTotal, TaxAmount, Discount, TotalAmount, Status [Unpaid, Paid]). Create `Payment` (Id, InvoiceId, Amount, PaymentMethod [Cash, Card, Transfer], PaymentDate).
+- [x] **Generate Invoice Command**: Create `GenerateInvoiceCommand` and Handler. It fetches the Approved `Quotation` for the request, calculates SubTotal, adds 15% Tax, creates the `Invoice`, and changes `ServiceRequest` status to `Pending_Payment`.
+- [x] **Pay Invoice Command**: Create `ProcessPaymentCommand` (InvoiceId, Amount, PaymentMethod) and Handler. It creates a `Payment` record. If total payments >= `Invoice.TotalAmount`, mark `Invoice` as `Paid` and update `ServiceRequest` status to `Ready_For_Release`.
+- [x] **API Controller**: Add `POST /api/requests/{id}/invoice` and `POST /api/invoices/{id}/pay` in a new `BillingController`.
+- [x] **Migrations**: Run a new EF Core migration (`AddInvoicing`) to create the Invoice and Payment tables.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to generate an invoice and pay it in full.

@@ -11,10 +11,11 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasKey(i => i.Id);
 
         builder.Property(i => i.InvoiceNumber).IsRequired().HasMaxLength(50);
-        builder.Property(i => i.PartsCost).HasPrecision(18, 2);
-        builder.Property(i => i.LaborCost).HasPrecision(18, 2);
+        builder.Property(i => i.SubTotal).HasPrecision(18, 2);
         builder.Property(i => i.TaxAmount).HasPrecision(18, 2);
+        builder.Property(i => i.Discount).HasPrecision(18, 2);
         builder.Property(i => i.TotalAmount).HasPrecision(18, 2);
+        builder.Property(i => i.Status).HasConversion<string>();
 
         builder.HasIndex(i => i.InvoiceNumber).IsUnique();
 
@@ -33,5 +34,11 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
                .HasForeignKey(i => i.ServiceRequestId)
                .IsRequired(false)
                .OnDelete(DeleteBehavior.Restrict);
+               
+        // 1:N → Payments
+        builder.HasMany(i => i.Payments)
+               .WithOne(p => p.Invoice)
+               .HasForeignKey(p => p.InvoiceId)
+               .OnDelete(DeleteBehavior.Cascade);
     }
 }
