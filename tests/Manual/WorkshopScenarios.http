@@ -167,3 +167,26 @@ Content-Type: application/json
 POST {{baseUrl}}/api/Quotations/{{quotationId}}/reject
 Content-Type: application/json
 
+
+### ============================================================
+###  SCENARIO 4 — Repair Execution & Status Tracking
+### ============================================================
+#
+#  Business Context:
+#    The mechanic starts repairing the vehicle and needs to 
+#    update the repair status to reflect real-time progress.
+#
+#  Endpoint: PATCH /api/requests/{id}/status
+#  Controller: OperationsController
+#  Handler:   UpdateServiceRequestStatusCommandHandler
+# ---------------------------------------------------------------
+
+# Update Status to Waiting_For_Parts (value: 8)
+PATCH {{baseUrl}}/api/requests/{{serviceRequestId}}/status
+Content-Type: application/json
+
+{
+  "newStatus": 8,
+  "notes": "Radiator cap is out of stock. Waiting for supplier delivery tomorrow morning."
+}
+
