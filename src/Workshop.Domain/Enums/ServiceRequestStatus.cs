@@ -36,5 +36,11 @@ public enum ServiceRequestStatus
     External_Work = 9,
 
     /// <summary>Repairs are completed and the vehicle is awaiting final Quality Control check.</summary>
-    Ready_For_QC = 10
+    Ready_For_QC = 10,
+
+    /// <summary>QC failed, returning to repairing state but marked for tracking.</summary>
+    QC_Failed = 11,
+
+    /// <summary>QC passed, vehicle is ready to be invoiced and delivered.</summary>
+    Ready_For_Invoicing = 12
 }
