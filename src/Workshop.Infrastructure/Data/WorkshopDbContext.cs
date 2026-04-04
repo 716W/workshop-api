@@ -20,6 +20,7 @@ public class WorkshopDbContext : DbContext
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
     public DbSet<Quotation> Quotations => Set<Quotation>();
     public DbSet<QuotationItem> QuotationItems => Set<QuotationItem>();
+    public DbSet<PurchaseNeed> PurchaseNeeds => Set<PurchaseNeed>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,6 +1,6 @@
 ﻿# Workshop System Development Plan
 
-Current Status: Phase 3 (Scenario 2) COMPLETE
+Current Status: Phase 5 (Infrastructure Wiring & MySQL Integration) COMPLETE ✅
 
 ## Rules for AI Agent
 
@@ -56,19 +56,3 @@ Current Status: Phase 3 (Scenario 2) COMPLETE
 - [x] **DTOs & Validators**: Create `CreateQuotationDto` and `QuotationItemDto`. Use FluentValidation to ensure `Quantity` >= 1, `UnitPrice` >= 0, and the list of items is not empty.
 - [x] **CQRS Command**: Create `GenerateQuotationCommand` and its Handler. The handler must: retrieve the ServiceRequest, create the Quotation, calculate total costs, update the request status, and save changes via the repository. Return a Success `Result<Guid>` with the Quotation ID.
 - [x] **API Controller**: Add a `POST /api/requests/{id}/quotations` endpoint in `OperationsController` to trigger this command.
-
-## 🧪 Phase 3.5: Scenario Testing & Validation
-
-- [x] **Setup Testing Directory**: Create a folder named `tests/Manual` at the root of the solution.
-- [x] **Create Scenario File**: Create a file named `WorkshopScenarios.http` inside the new folder. Set a `@baseUrl` variable at the top.
-- [x] **Document Scenario 1 (Check-In)**: Write a documented `POST` request to create a new `ServiceRequest` (e.g., Repair type) with realistic dummy JSON payload.
-- [x] **Document Scenario 2 (Quotation)**: Write a documented `POST` request to generate a `Quotation` for the request created above, including dummy Parts and Labor items.
-- [x] **Review & Fix**: Ensure the application compiles without errors and the endpoints match the HTTP file perfectly.
-
-## 🗄️ Phase 4: MySQL Integration & Migration Fix
-
-- [x] **EF Core Tools**: Ensure `dotnet-ef` is installed globally (`dotnet tool install --global dotnet-ef`).
-- [x] **Install Packages**: Install `Pomelo.EntityFrameworkCore.MySql` in the `Infrastructure` project. Install `Microsoft.EntityFrameworkCore.Design` and `Microsoft.EntityFrameworkCore.Tools` in the `API` project.
-- [x] **Configure DI**: Add a MySQL connection string to `appsettings.json`. Configure the `DbContext` in the Infrastructure layer using `UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))`.
-- [x] **Generate Migration**: Run this exact command in the terminal from the solution root: `dotnet ef migrations add InitialCreate --project src/Workshop.Infrastructure --startup-project src/Workshop.API`
-- [x] **Update Database**: Run this exact command in the terminal: `dotnet ef database update --project src/Workshop.Infrastructure --startup-project src/Workshop.API`

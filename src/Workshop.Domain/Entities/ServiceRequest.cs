@@ -106,4 +106,49 @@ public abstract class ServiceRequest : BaseAuditableEntity
         Quotation = quotation;
         Status = ServiceRequestStatus.PendingCustomerApproval;
     }
+
+    /// <summary>
+    /// Records the customer's approval of the attached quotation and starts work.
+    /// Transitions the status to <see cref="ServiceRequestStatus.In_Progress"/>.
+    /// </summary>
+    /// <exception cref="BusinessRuleException">
+    /// Thrown when the request is not in <see cref="ServiceRequestStatus.PendingCustomerApproval"/>.
+    /// </exception>
+    public void ApproveQuotation()
+    {
+        if (Status != ServiceRequestStatus.PendingCustomerApproval)
+            throw new BusinessRuleException(
+                $"Quotation can only be approved when the request is in '{ServiceRequestStatus.PendingCustomerApproval}' status. " +
+                $"Current status: '{Status}' (Id: {Id}).");
+
+        if (Quotation is null)
+            throw new BusinessRuleException(
+                $"No quotation is attached to service request (Id: {Id}). Cannot approve.");
+
+        Quotation.Approve();
+        Status = ServiceRequestStatus.In_Progress;
+    }
+
+    /// <summary>
+    /// Records the customer's rejection of the attached quotation and closes the request.
+    /// Transitions the status to <see cref="ServiceRequestStatus.Closed_Rejected"/>.
+    /// An inspection-fee invoice must be created by the caller.
+    /// </summary>
+    /// <exception cref="BusinessRuleException">
+    /// Thrown when the request is not in <see cref="ServiceRequestStatus.PendingCustomerApproval"/>.
+    /// </exception>
+    public void RejectQuotation()
+    {
+        if (Status != ServiceRequestStatus.PendingCustomerApproval)
+            throw new BusinessRuleException(
+                $"Quotation can only be rejected when the request is in '{ServiceRequestStatus.PendingCustomerApproval}' status. " +
+                $"Current status: '{Status}' (Id: {Id}).");
+
+        if (Quotation is null)
+            throw new BusinessRuleException(
+                $"No quotation is attached to service request (Id: {Id}). Cannot reject.");
+
+        Quotation.Reject();
+        Status = ServiceRequestStatus.Closed_Rejected;
+    }
 }

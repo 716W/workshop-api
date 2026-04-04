@@ -18,5 +18,11 @@ public enum ServiceRequestStatus
     Closed = 3,
 
     /// <summary>The customer or workshop cancelled the request.</summary>
-    Cancelled = 4
+    Cancelled = 4,
+
+    /// <summary>The customer approved the quotation; active repair/service work is underway.</summary>
+    In_Progress = 5,
+
+    /// <summary>The customer rejected the quotation; an inspection fee invoice has been raised and the request is closed.</summary>
+    Closed_Rejected = 6
 }
