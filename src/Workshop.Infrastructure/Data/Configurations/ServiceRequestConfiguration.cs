@@ -48,6 +48,12 @@ public sealed class ServiceRequestConfiguration : IEntityTypeConfiguration<Servi
                      .HasForeignKey<Workshop.Domain.Entities.Quotation>(q => q.ServiceRequestId)
                      .OnDelete(DeleteBehavior.Cascade);
 
+              // ── Status Histories (1:N) ────────────────────────────────────────────
+              builder.HasMany(r => r.StatusHistories)
+                     .WithOne(h => h.ServiceRequest)
+                     .HasForeignKey(h => h.ServiceRequestId)
+                     .OnDelete(DeleteBehavior.Cascade);
+
               // ── Common relationships ──────────────────────────────────────────
               builder.HasOne(r => r.Customer)
                      .WithMany()

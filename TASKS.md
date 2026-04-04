@@ -58,9 +58,20 @@ Current Status: Phase 5: Scenario 3 - Approval, Rejection & Inventory
 - [x] **API Controller**: Add a `POST /api/requests/{id}/quotations` endpoint in `OperationsController` to trigger this command.
 
 ## 🔄 Phase 5: Scenario 3 - Approval, Rejection & Inventory
+
 - [x] **Domain Updates**: Add `Status` (Pending, Approved, Rejected) to `Quotation`. Create a `PurchaseNeed` entity (Id, PartId/Name, Quantity, ServiceRequestId, DateRequested, IsResolved) for tracking out-of-stock items. Create a Domain Event `QuotationApprovedEvent` (inherits `INotification` from MediatR) containing the QuotationId.
 - [x] **Reject Command**: Create `RejectQuotationCommand` and Handler. It changes the `ServiceRequest` status to `Closed_Rejected` and can optionally log an "Inspection Fee".
 - [x] **Approve Command**: Create `ApproveQuotationCommand` and Handler. It changes `ServiceRequest` status to `In_Progress`, marks the `Quotation` as `Approved`, and publishes `QuotationApprovedEvent` via MediatR.
 - [x] **Inventory Event Handler**: Create `AllocatePartsEventHandler` (`INotificationHandler<QuotationApprovedEvent>`). When triggered, it loops through the `Part` items in the quotation. (For now, assume parts are out-of-stock to test the logic) -> It creates a `PurchaseNeed` record using the repository so the purchasing department knows to buy them.
 - [x] **API Controller**: Add `POST /api/quotations/{id}/approve` and `POST /api/quotations/{id}/reject` in the appropriate controller.
 - [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test the Approve and Reject endpoints.
+
+## 🔧 Phase 6: Scenario 4 - Repair Execution & Status Tracking
+
+- [x] **Domain Entities**: Create a `ServiceRequestStatusHistory` entity (Id, ServiceRequestId, OldStatus, NewStatus, Notes, CreatedAt). Ensure the relationship is configured in the `DbContext`.
+- [x] **Domain Enums**: Expand the `Status` Enum (if not already done) to include: `Repairing`, `Waiting_For_Parts`, `External_Work`, and `Ready_For_QC`.
+- [x] **CQRS & DTOs**: Create `UpdateServiceRequestStatusDto` (NewStatus, Notes). Create `UpdateServiceRequestStatusCommand` and its Handler.
+- [x] **Business Rules (Handler)**: The handler must fetch the request, generate a new `ServiceRequestStatusHistory` record, update the main request's status to the new one, and save both via the repository.
+- [x] **API Controller**: Add a `PATCH /api/requests/{id}/status` endpoint in the `OperationsController` to handle this command.
+- [x] **Migrations**: Run a new EF Core migration (`AddStatusHistory`) to create the new table in MySQL.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a scenario showing a status update (e.g., to `Waiting_For_Parts` with a note).

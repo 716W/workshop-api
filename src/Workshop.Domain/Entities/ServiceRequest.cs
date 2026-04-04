@@ -53,6 +53,11 @@ public abstract class ServiceRequest : BaseAuditableEntity
     /// <summary>Current life-cycle state of this service request.</summary>
     public ServiceRequestStatus Status { get; protected set; } = ServiceRequestStatus.Open;
 
+    // ── Status History (1:N) ──────────────────────────────────────────────────
+
+    private readonly List<ServiceRequestStatusHistory> _statusHistories = new();
+    public IReadOnlyCollection<ServiceRequestStatusHistory> StatusHistories => _statusHistories.AsReadOnly();
+
     // ── Quotation (1:0..1) ────────────────────────────────────────────────────
 
     /// <summary>
@@ -150,5 +155,23 @@ public abstract class ServiceRequest : BaseAuditableEntity
 
         Quotation.Reject();
         Status = ServiceRequestStatus.Closed_Rejected;
+    }
+
+    /// <summary>
+    /// Changes the status of this request and records a history entry.
+    /// </summary>
+    public void ChangeStatus(ServiceRequestStatus newStatus, string? notes)
+    {
+        if (Status == newStatus)
+            return;
+
+        var history = new ServiceRequestStatusHistory(
+            Id,
+            Status,
+            newStatus,
+            notes);
+
+        _statusHistories.Add(history);
+        Status = newStatus;
     }
 }

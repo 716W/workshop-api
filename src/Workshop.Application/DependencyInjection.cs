@@ -41,6 +41,11 @@ public static class DependencyInjection
             ICommandHandler<RejectQuotationCommand, RejectQuotationResult>,
             RejectQuotationCommandHandler>();
 
+        // Phase 6 – Scenario 4 Status Tracking
+        services.AddScoped<
+            ICommandHandler<UpdateServiceRequestStatusCommand, Guid>,
+            UpdateServiceRequestStatusCommandHandler>();
+
         // ── MediatR – auto-discovers INotificationHandler<T> implementations ─
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssemblyContaining<AllocatePartsEventHandler>());

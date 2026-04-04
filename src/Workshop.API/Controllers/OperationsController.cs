@@ -13,11 +13,14 @@ namespace Workshop.API.Controllers;
 public sealed class OperationsController : ControllerBase
 {
     private readonly ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> _generateQuotationHandler;
+    private readonly ICommandHandler<UpdateServiceRequestStatusCommand, Guid> _updateStatusHandler;
 
     public OperationsController(
-        ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> generateQuotationHandler)
+        ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> generateQuotationHandler,
+        ICommandHandler<UpdateServiceRequestStatusCommand, Guid> updateStatusHandler)
     {
         _generateQuotationHandler = generateQuotationHandler;
+        _updateStatusHandler = updateStatusHandler;
     }
 
     /// <summary>
@@ -62,5 +65,31 @@ public sealed class OperationsController : ControllerBase
             actionName: nameof(GenerateQuotation),
             routeValues: new { id },
             value: result.Value);
+    }
+
+    /// <summary>
+    /// Updates the status of a service request and records history.
+    /// </summary>
+    [HttpPatch("{id:guid}/status")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateStatus(
+        [FromRoute] Guid id,
+        [FromBody] UpdateServiceRequestStatusDto dto,
+        CancellationToken ct)
+    {
+        var command = new UpdateServiceRequestStatusCommand(id, dto);
+        var result = await _updateStatusHandler.HandleAsync(command, ct);
+
+        if (!result.IsSuccess)
+        {
+            if (result.Error!.Contains("was not found", StringComparison.OrdinalIgnoreCase))
+                return Problem(detail: result.Error, statusCode: StatusCodes.Status404NotFound);
+
+            return Problem(detail: result.Error, statusCode: StatusCodes.Status422UnprocessableEntity);
+        }
+
+        return Ok(result.Value);
     }
 }
