@@ -101,3 +101,11 @@ Current Status: Phase 9: Scenario 7 - Vehicle Release & Closure (COMPLETED!)
 - [x] **API Controller**: Add `POST /api/requests/{id}/release` in the `ReceptionController` (or OperationsController).
 - [x] **Migrations**: Run a final EF Core migration (`AddWorkerCommissions`) to update the database.
 - [x] **Testing**: Add the final API call to `tests/Manual/WorkshopScenarios.http` to complete the full lifecycle!
+
+## 🗂️ Phase 10: Refactoring & Comprehensive Testing
+- [x] **Domain Organization**: Group classes in the `Domain` project into descriptive folders: `/Entities`, `/Enums`, `/Events`, and `/ValueObjects` (if any). Update namespaces accordingly.
+- [x] **Application Organization (Feature Folders)**: Refactor the `Application` project using Feature folders. Create a `/Features` folder with subfolders like `ServiceRequests`, `Quotations`, `Invoicing`, and `QC`. Move the relevant Commands, Handlers, and DTOs into these feature folders. Update namespaces globally to ensure the solution compiles successfully.
+- [x] **Infrastructure Organization**: Ensure `Infrastructure` is cleanly grouped into `/Persistence` (DbContext, Interceptors, Migrations), `/Repositories`, and `/Services` (if any).
+- [x] **HTTP Testing (Validations)**: Update `tests/Manual/WorkshopScenarios.http` with "Sad Path" Validation cases (e.g., POST a Request with missing/invalid data, negative quantity in Quotation).
+- [x] **HTTP Testing (Business Rules)**: Add "Sad Path" Business logic cases to the `.http` file (e.g., Try to approve a quotation for a closed request, try to pay an already paid invoice, try to release a vehicle that is not `Ready_For_Release`).
+- [x] **Final Build Check**: Run `dotnet build` to guarantee no namespace or missing reference errors exist after the folder restructuring.

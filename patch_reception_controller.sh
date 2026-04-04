@@ -1,0 +1,3 @@
+sed -i 's/ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> _handler;/ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> _handler;\n    private readonly MediatR.IMediator _mediator;/g' ./src/Workshop.API/Controllers/ReceptionController.cs
+sed -i 's/ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> handler)/ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> handler,\n        MediatR.IMediator mediator)/g' ./src/Workshop.API/Controllers/ReceptionController.cs
+sed -i 's/_handler = handler;/_handler = handler;\n        _mediator = mediator;/g' ./src/Workshop.API/Controllers/ReceptionController.cs

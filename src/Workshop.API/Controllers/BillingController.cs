@@ -1,6 +1,5 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Workshop.Application.Commands;
 using Workshop.Domain.Enums;
 
 namespace Workshop.API.Controllers;

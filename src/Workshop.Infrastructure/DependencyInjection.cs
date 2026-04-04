@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Workshop.Domain.Interfaces;
-using Workshop.Infrastructure.Data;
-using Workshop.Infrastructure.Interceptors;
+using Workshop.Infrastructure.Persistence;
+using Workshop.Infrastructure.Persistence.Interceptors;
 using Workshop.Infrastructure.Repositories;
 
 namespace Workshop.Infrastructure;
