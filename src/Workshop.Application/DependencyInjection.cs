@@ -46,6 +46,16 @@ public static class DependencyInjection
             ICommandHandler<UpdateServiceRequestStatusCommand, Guid>,
             UpdateServiceRequestStatusCommandHandler>();
 
+        // Phase 7 – Scenario 5 QC
+        services.AddScoped<
+            ICommandHandler<PerformQCCommand, Guid>,
+            PerformQCCommandHandler>();
+
+        // Phase 7 - Scenario 5
+        services.AddScoped<
+            ICommandHandler<PerformQCCommand, Guid>,
+            PerformQCCommandHandler>();
+
         // ── MediatR – auto-discovers INotificationHandler<T> implementations ─
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssemblyContaining<AllocatePartsEventHandler>());
