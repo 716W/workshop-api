@@ -14,13 +14,16 @@ public sealed class OperationsController : ControllerBase
 {
     private readonly ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> _generateQuotationHandler;
     private readonly ICommandHandler<UpdateServiceRequestStatusCommand, Guid> _updateStatusHandler;
+    private readonly ICommandHandler<PerformQCCommand, Guid> _performQCHandler;
 
     public OperationsController(
         ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> generateQuotationHandler,
-        ICommandHandler<UpdateServiceRequestStatusCommand, Guid> updateStatusHandler)
+        ICommandHandler<UpdateServiceRequestStatusCommand, Guid> updateStatusHandler,
+        ICommandHandler<PerformQCCommand, Guid> performQCHandler)
     {
         _generateQuotationHandler = generateQuotationHandler;
         _updateStatusHandler = updateStatusHandler;
+        _performQCHandler = performQCHandler;
     }
 
     /// <summary>
@@ -81,6 +84,39 @@ public sealed class OperationsController : ControllerBase
     {
         var command = new UpdateServiceRequestStatusCommand(id, dto);
         var result = await _updateStatusHandler.HandleAsync(command, ct);
+
+        if (!result.IsSuccess)
+        {
+            if (result.Error!.Contains("was not found", StringComparison.OrdinalIgnoreCase))
+                return Problem(detail: result.Error, statusCode: StatusCodes.Status404NotFound);
+
+            return Problem(detail: result.Error, statusCode: StatusCodes.Status422UnprocessableEntity);
+        }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Performs Quality Control (QC) for a service request.
+    /// </summary>
+    [HttpPost("{id:guid}/qc")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> PerformQC(
+        [FromRoute] Guid id,
+        [FromBody] PerformQCDto dto,
+        CancellationToken ct)
+    {
+        var command = new PerformQCCommand 
+        { 
+            ServiceRequestId = id, 
+            IsPassed = dto.IsPassed, 
+            Notes = dto.Notes 
+        };
+
+        var result = await _performQCHandler.HandleAsync(command, ct);
 
         if (!result.IsSuccess)
         {
