@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationServices();
 
 // ── Infrastructure layer (DbContext via MySQL, interceptors, repositories) ────
-builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // ── ASP.NET Core ──────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
