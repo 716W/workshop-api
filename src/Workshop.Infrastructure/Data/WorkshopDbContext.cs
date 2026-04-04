@@ -23,6 +23,7 @@ public class WorkshopDbContext : DbContext
     public DbSet<PurchaseNeed> PurchaseNeeds => Set<PurchaseNeed>();
     public DbSet<ServiceRequestStatusHistory> ServiceRequestStatusHistories => Set<ServiceRequestStatusHistory>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<WorkerCommission> WorkerCommissions => Set<WorkerCommission>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -53,6 +53,9 @@ public abstract class ServiceRequest : BaseAuditableEntity
     /// <summary>Current life-cycle state of this service request.</summary>
     public ServiceRequestStatus Status { get; protected set; } = ServiceRequestStatus.Open;
 
+    /// <summary>When the request was eventually closed.</summary>
+    public DateTime? ClosedAt { get; protected set; }
+
     // ── Status History (1:N) ──────────────────────────────────────────────────
 
     private readonly List<ServiceRequestStatusHistory> _statusHistories = new();
@@ -173,5 +176,18 @@ public abstract class ServiceRequest : BaseAuditableEntity
 
         _statusHistories.Add(history);
         Status = newStatus;
+    }
+
+    /// <summary>
+    /// Closes the service request successfully, capturing the closure time.
+    /// Expected to be called when the vehicle is Ready_For_Release.
+    /// </summary>
+    public void CloseSuccessfully(string? notes = "Vehicle released to customer")
+    {
+        if (Status != ServiceRequestStatus.Ready_For_Release)
+            throw new BusinessRuleException($"Cannot close request from status {Status}. Expected {ServiceRequestStatus.Ready_For_Release}.");
+
+        ChangeStatus(ServiceRequestStatus.Closed_Success, notes);
+        ClosedAt = DateTime.UtcNow;
     }
 }

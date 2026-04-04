@@ -1,6 +1,6 @@
 ﻿# Workshop System Development Plan
 
-Current Status: Phase 8: Scenario 6 - Invoicing & Payment
+Current Status: Phase 9: Scenario 7 - Vehicle Release & Closure (COMPLETED!)
 
 ## Rules for AI Agent
 
@@ -93,3 +93,11 @@ Current Status: Phase 8: Scenario 6 - Invoicing & Payment
 - [x] **API Controller**: Add `POST /api/requests/{id}/invoice` and `POST /api/invoices/{id}/pay` in a new `BillingController`.
 - [x] **Migrations**: Run a new EF Core migration (`AddInvoicing`) to create the Invoice and Payment tables.
 - [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to generate an invoice and pay it in full.
+
+## 🏁 Phase 9: Scenario 7 - Vehicle Release & Closure
+- [x] **Domain Updates**: Add `Closed_Success` to the `Status` Enum. Add `ClosedAt` (nullable DateTime) to `ServiceRequest`. Create a `WorkerCommission` entity (Id, WorkerId, ServiceRequestId, Amount, CreatedAt).
+- [x] **CQRS Command**: Create `CloseServiceRequestCommand` and Handler.
+- [x] **Business Rules (Handler)**: Ensure the request status is `Ready_For_Release`. Change status to `Closed_Success` and set `ClosedAt` to `DateTime.UtcNow`. Calculate the mechanic's commission (e.g., if `Fixed`, use `CommissionValue`; if `Percentage`, calculate based on `Invoice.SubTotal` or Labor total) and create a `WorkerCommission` record.
+- [x] **API Controller**: Add `POST /api/requests/{id}/release` in the `ReceptionController` (or OperationsController).
+- [x] **Migrations**: Run a final EF Core migration (`AddWorkerCommissions`) to update the database.
+- [x] **Testing**: Add the final API call to `tests/Manual/WorkshopScenarios.http` to complete the full lifecycle!

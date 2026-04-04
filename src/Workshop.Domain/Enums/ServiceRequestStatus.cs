@@ -48,5 +48,8 @@ public enum ServiceRequestStatus
     Pending_Payment = 13,
 
     /// <summary>Invoice paid in full, vehicle is ready for final customer release.</summary>
-    Ready_For_Release = 14
+    Ready_For_Release = 14,
+
+    /// <summary>Vehicle released and fully completed successfully.</summary>
+    Closed_Success = 15
 }

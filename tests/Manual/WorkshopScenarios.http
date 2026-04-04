@@ -286,3 +286,13 @@ Content-Type: application/json
   "paymentMethod": 1,
   "transactionReference": "TXN_CARD_0991823"
 }
+
+###
+# Endpoint: POST /api/requests/{id}/release
+# Controller: ReceptionController
+# Handler:   CloseServiceRequestCommandHandler
+# ---------------------------------------------------------------
+
+# Release the vehicle and calculate mechanic commission
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/release
+Content-Type: application/json
