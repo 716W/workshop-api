@@ -64,3 +64,11 @@ Current Status: Phase 3 (Scenario 2) COMPLETE
 - [x] **Document Scenario 1 (Check-In)**: Write a documented `POST` request to create a new `ServiceRequest` (e.g., Repair type) with realistic dummy JSON payload.
 - [x] **Document Scenario 2 (Quotation)**: Write a documented `POST` request to generate a `Quotation` for the request created above, including dummy Parts and Labor items.
 - [x] **Review & Fix**: Ensure the application compiles without errors and the endpoints match the HTTP file perfectly.
+
+## 🗄️ Phase 4: MySQL Integration & Migration Fix
+
+- [x] **EF Core Tools**: Ensure `dotnet-ef` is installed globally (`dotnet tool install --global dotnet-ef`).
+- [x] **Install Packages**: Install `Pomelo.EntityFrameworkCore.MySql` in the `Infrastructure` project. Install `Microsoft.EntityFrameworkCore.Design` and `Microsoft.EntityFrameworkCore.Tools` in the `API` project.
+- [x] **Configure DI**: Add a MySQL connection string to `appsettings.json`. Configure the `DbContext` in the Infrastructure layer using `UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))`.
+- [x] **Generate Migration**: Run this exact command in the terminal from the solution root: `dotnet ef migrations add InitialCreate --project src/Workshop.Infrastructure --startup-project src/Workshop.API`
+- [x] **Update Database**: Run this exact command in the terminal: `dotnet ef database update --project src/Workshop.Infrastructure --startup-project src/Workshop.API`

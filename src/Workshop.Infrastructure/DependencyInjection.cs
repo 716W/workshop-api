@@ -18,7 +18,8 @@ public static class DependencyInjection
         // EF Core – inject the interceptor via the options builder.
         services.AddDbContext<WorkshopDbContext>((sp, options) =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 32)));
             options.AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
         });
 

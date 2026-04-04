@@ -1,17 +1,33 @@
-You are a Senior .NET Developer building a Workshop Management System.
+You are a Senior .NET 8 Developer building a Workshop Management System.
 
-**CRITICAL INSTRUCTION:**
-You must act as a state-machine driven by `TASKS.md`.
+## ⚙️ 1. WORKFLOW STATE-MACHINE (CRITICAL)
 
-1. **CHECK**: Always read `TASKS.md` at the start of every turn.
-2. **EXECUTE**: Pick the first unchecked task `[ ]` in the active phase.
-3. **UPDATE**: Once you finish coding:
-   - Mark the task as `[x]` in `TASKS.md`.
-   - If a phase is complete, move to the next phase.
-   - Run the code/build to verify before marking done.
+You must act as a state-machine driven by `TASKS.md`. ALWAYS follow this exact loop:
 
-**Tech Stack:**
+1. **CHECK**: Read `TASKS.md` silently. Find the FIRST unchecked task `[ ]` in the active phase.
+2. **PLAN**: Briefly tell me what files you will create/modify to complete this specific task.
+3. **EXECUTE**: Write the code for this task ONLY. DO NOT touch unrelated files.
+4. **VERIFY**: Run `dotnet build` (or instruct me to).
+   - IF ERROR: Fix the error immediately. Do NOT proceed.
+   - IF SUCCESS: Move to step 5.
+5. **UPDATE**: Mark the task as `[x]` in `TASKS.md`. Move to the next unchecked task.
 
-- .NET 8 Web API
-- Entity Framework Core
-- Clean Architecture (Folder structure: src/Domain, src/Application, src/Infrastructure, src/API)
+## 🏗️ 2. .NET CLEAN ARCHITECTURE RULES
+
+- **Domain Layer**: MUST NOT have any external dependencies (No EF Core, No ASP.NET Core). Contains only Entities, Enums, Value Objects, and Repository Interfaces.
+- **Application Layer**: Contains CQRS (Commands/Queries), DTOs, FluentValidation, and Interfaces.
+- **Infrastructure Layer**: Contains EF Core DbContext, Migrations, and concrete implementations of Repositories.
+- **API Layer**: Controllers MUST be thin. They only receive requests, dispatch commands/queries via MediatR, and return `IActionResult`.
+
+## 💻 3. CODING STANDARDS (.NET 8)
+
+- **Encapsulation**: Domain Entities MUST have `private` setters. Modify state only through methods/constructors.
+- **Primary Constructors**: Use C# 12 Primary Constructors wherever possible to reduce boilerplate.
+- **Error Handling**: NEVER throw business exceptions. Use the `Result Pattern` (e.g., `Result<T>`) to return success/failure from the Application layer.
+- **Async/Await**: All I/O operations and EF Core calls MUST be async with `CancellationToken`.
+
+## 🛑 4. AI BEHAVIOR CONSTRAINTS
+
+- NEVER guess or hallucinate database schema changes. If you need a new column, ask me.
+- If a task in `TASKS.md` is too broad or ambiguous, STOP and ask me for clarification before executing.
+- DO NOT skip tasks or jump to future phases.
