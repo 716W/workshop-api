@@ -286,3 +286,71 @@ Content-Type: application/json
   "paymentMethod": 1,
   "transactionReference": "TXN_CARD_0991823"
 }
+
+###
+# Endpoint: POST /api/requests/{id}/release
+# Controller: ReceptionController
+# Handler:   CloseServiceRequestCommandHandler
+# ---------------------------------------------------------------
+
+# Release the vehicle and calculate mechanic commission
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/release
+Content-Type: application/json
+
+### ==========================================================
+### PHASE 10: SAD PATHS - HTTP TESTING (VALIDATION & BUSINESS RULES)
+### ==========================================================
+
+### SAD PATH: Invalid Service Request (Validation Error)
+# Expected: 400 Bad Request with Validation Problem Details
+POST {{host}}/api/reception/requests
+Content-Type: application/json
+
+{
+  "requestType": 0,
+  "vehicleId": "00000000-0000-0000-0000-000000000000",
+  "customerId": "00000000-0000-0000-0000-000000000000",
+  "workerId": "00000000-0000-0000-0000-000000000000",
+  "price": -100,
+  "date": "2020-01-01T00:00:00Z"
+}
+
+###
+
+### SAD PATH: Invalid Quotation (Negative Quantity)
+# Expected: 400 Bad Request with Validation Problem Details
+POST {{host}}/api/operations/requests/{{requestId}}/quotations
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "type": 0,
+      "description": "Oil Filter",
+      "quantity": -5,
+      "unitPrice": 15.0
+    }
+  ]
+}
+
+###
+
+### SAD PATH: Reject ALREADY Approved Quotation (Business Logic Error)
+# Expected: 400 Bad Request or 409 Conflict with 'Cannot reject an already approved quotation'
+POST {{host}}/api/operations/quotations/{{quotationId}}/reject
+Content-Type: application/json
+
+{
+  "reason": "Change of mind"
+}
+
+###
+
+### SAD PATH: Release a Vehicle before it's Ready (Business Logic Error)
+# Expected: 400 Bad Request or 409 Conflict
+POST {{host}}/api/reception/requests/{{requestId}}/release
+Content-Type: application/json
+
+{}
+
+###

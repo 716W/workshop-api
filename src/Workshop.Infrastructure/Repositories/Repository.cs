@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Workshop.Domain.Common;
 using Workshop.Domain.Interfaces;
-using Workshop.Infrastructure.Data;
+using Workshop.Infrastructure.Persistence;
 
 namespace Workshop.Infrastructure.Repositories;
 

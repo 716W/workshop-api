@@ -2,11 +2,6 @@ using FluentValidation;
 
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Workshop.Application.Commands;
-using Workshop.Application.Handlers;
-using Workshop.Application.Interfaces;
-using Workshop.Application.Services;
-using Workshop.Application.Validators;
 
 namespace Workshop.Application;
 

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using Workshop.Domain.Interfaces;
-using Workshop.Infrastructure.Data;
+using Workshop.Infrastructure.Persistence;
 
 namespace Workshop.Infrastructure.Repositories;
 

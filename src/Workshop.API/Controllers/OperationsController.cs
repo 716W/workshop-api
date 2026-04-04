@@ -1,7 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Workshop.Application.Commands;
-using Workshop.Application.DTOs;
-using Workshop.Application.Interfaces;
 
 namespace Workshop.API.Controllers;
 
