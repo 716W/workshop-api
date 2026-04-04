@@ -1,6 +1,6 @@
 ﻿# Workshop System Development Plan
 
-Current Status: Phase 5 (Infrastructure Wiring & MySQL Integration) COMPLETE ✅
+Current Status: Phase 5: Scenario 3 - Approval, Rejection & Inventory
 
 ## Rules for AI Agent
 
@@ -56,3 +56,11 @@ Current Status: Phase 5 (Infrastructure Wiring & MySQL Integration) COMPLETE ✅
 - [x] **DTOs & Validators**: Create `CreateQuotationDto` and `QuotationItemDto`. Use FluentValidation to ensure `Quantity` >= 1, `UnitPrice` >= 0, and the list of items is not empty.
 - [x] **CQRS Command**: Create `GenerateQuotationCommand` and its Handler. The handler must: retrieve the ServiceRequest, create the Quotation, calculate total costs, update the request status, and save changes via the repository. Return a Success `Result<Guid>` with the Quotation ID.
 - [x] **API Controller**: Add a `POST /api/requests/{id}/quotations` endpoint in `OperationsController` to trigger this command.
+
+## 🔄 Phase 5: Scenario 3 - Approval, Rejection & Inventory
+- [x] **Domain Updates**: Add `Status` (Pending, Approved, Rejected) to `Quotation`. Create a `PurchaseNeed` entity (Id, PartId/Name, Quantity, ServiceRequestId, DateRequested, IsResolved) for tracking out-of-stock items. Create a Domain Event `QuotationApprovedEvent` (inherits `INotification` from MediatR) containing the QuotationId.
+- [x] **Reject Command**: Create `RejectQuotationCommand` and Handler. It changes the `ServiceRequest` status to `Closed_Rejected` and can optionally log an "Inspection Fee".
+- [x] **Approve Command**: Create `ApproveQuotationCommand` and Handler. It changes `ServiceRequest` status to `In_Progress`, marks the `Quotation` as `Approved`, and publishes `QuotationApprovedEvent` via MediatR.
+- [x] **Inventory Event Handler**: Create `AllocatePartsEventHandler` (`INotificationHandler<QuotationApprovedEvent>`). When triggered, it loops through the `Part` items in the quotation. (For now, assume parts are out-of-stock to test the logic) -> It creates a `PurchaseNeed` record using the repository so the purchasing department knows to buy them.
+- [x] **API Controller**: Add `POST /api/quotations/{id}/approve` and `POST /api/quotations/{id}/reject` in the appropriate controller.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test the Approve and Reject endpoints.
