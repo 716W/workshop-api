@@ -142,3 +142,9 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
 - [ ] **Resolve Purchase Need Command**: Create `ResolvePurchaseNeedCommand` (parameter: PurchaseNeedId). The handler must fetch the `PurchaseNeed`, set `IsResolved = true`, find the associated `Part` (or create it if it doesn't exist), increment its `Quantity` by the requested amount, and save changes.
 - [ ] **API Controller**: Create `InventoryController` inheriting from `BaseApiController`. Add endpoints for Parts (GET, POST, PUT) and Purchase Needs (GET `/api/inventory/needs/pending`, PATCH `/api/inventory/needs/{id}/resolve`). Update `ApiRoutes` constants accordingly.
 - [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with endpoints to create a part, list pending needs, and resolve a need.
+
+## 👥 Phase 15: Customers & Vehicles Module
+- [x] **Queries (Read)**: Create `SearchCustomersQuery` (parameter: SearchTerm for Name/Phone) returning a paginated list. Create `GetCustomerHistoryQuery` (parameter: CustomerId) returning the customer's details, their list of owned `Vehicles`, and their past `ServiceRequests` (Summary).
+- [ ] **Commands (Write)**: Create `UpdateCustomerCommand` (adjusting Name, Phone, Email) and `UpdateVehicleCommand` (adjusting PlateNumber, Color, etc.).
+- [ ] **API Controller**: Create `CustomersController` and `VehiclesController` (or combine them) inheriting from `BaseApiController`. Add endpoints: `GET /api/customers` (with search query params), `GET /api/customers/{id}/history`, `PUT /api/customers/{id}`, and `PUT /api/vehicles/{id}`. Update `ApiRoutes` constants accordingly.
+- [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test searching for a customer, fetching their history, and updating their info.
