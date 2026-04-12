@@ -134,3 +134,11 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
 - [x] **Details Query**: Create `GetServiceRequestByIdQuery` (parameter: Id) and Handler. Use EF Core `Include()` with `AsNoTracking()` to eagerly load all related entities (History, Quotation, Invoice) and map to `ServiceRequestDetailsDto`.
 - [x] **API Controller**: Add `GET` endpoints to `ReceptionController` or `OperationsController` (using `ApiRoutes` constants). Ensure they return `HandlePagedResult(...)` and `HandleResult(...)` using the base controller.
 - [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with `GET` requests to test fetching the paginated list and fetching a specific request by ID.
+
+## 📦 Phase 14: Inventory & Purchasing Module
+- [x] **Parts Queries (Read)**: Create `GetPagedPartsQuery` (returning a paginated list of parts) and `GetPartByIdQuery`.
+- [ ] **Parts Commands (Write)**: Create `CreatePartCommand` and `UpdatePartCommand` (adjusting Name, UnitPrice, Quantity).
+- [ ] **Purchase Needs Queries**: Create `GetPendingPurchaseNeedsQuery` to fetch all `PurchaseNeed` records where `IsResolved == false`.
+- [ ] **Resolve Purchase Need Command**: Create `ResolvePurchaseNeedCommand` (parameter: PurchaseNeedId). The handler must fetch the `PurchaseNeed`, set `IsResolved = true`, find the associated `Part` (or create it if it doesn't exist), increment its `Quantity` by the requested amount, and save changes.
+- [ ] **API Controller**: Create `InventoryController` inheriting from `BaseApiController`. Add endpoints for Parts (GET, POST, PUT) and Purchase Needs (GET `/api/inventory/needs/pending`, PATCH `/api/inventory/needs/{id}/resolve`). Update `ApiRoutes` constants accordingly.
+- [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with endpoints to create a part, list pending needs, and resolve a need.
