@@ -303,7 +303,7 @@ Content-Type: application/json
 
 ### SAD PATH: Invalid Service Request (Validation Error)
 # Expected: 400 Bad Request with Validation Problem Details
-POST {{host}}/api/reception/requests
+POST {{baseUrl}}/api/reception/requests
 Content-Type: application/json
 
 {
@@ -319,7 +319,7 @@ Content-Type: application/json
 
 ### SAD PATH: Invalid Quotation (Negative Quantity)
 # Expected: 400 Bad Request with Validation Problem Details
-POST {{host}}/api/operations/requests/{{requestId}}/quotations
+POST {{baseUrl}}/api/operations/requests/{{serviceRequestId}}/quotations
 Content-Type: application/json
 
 {
@@ -337,7 +337,7 @@ Content-Type: application/json
 
 ### SAD PATH: Reject ALREADY Approved Quotation (Business Logic Error)
 # Expected: 400 Bad Request or 409 Conflict with 'Cannot reject an already approved quotation'
-POST {{host}}/api/operations/quotations/{{quotationId}}/reject
+POST {{baseUrl}}/api/operations/quotations/{{quotationId}}/reject
 Content-Type: application/json
 
 {
@@ -348,9 +348,34 @@ Content-Type: application/json
 
 ### SAD PATH: Release a Vehicle before it's Ready (Business Logic Error)
 # Expected: 400 Bad Request or 409 Conflict
-POST {{host}}/api/reception/requests/{{requestId}}/release
+POST {{baseUrl}}/api/reception/requests/{{serviceRequestId}}/release
 Content-Type: application/json
 
 {}
+
+###
+
+### ==========================================================
+### PHASE 13: WORKSHOP BOARD QUERIES (READ OPERATIONS)
+### ==========================================================
+
+### GET Paged Service Requests (Workshop Board)
+# Expected: 200 OK with PagedResponse format
+GET {{baseUrl}}/api/requests?pageNumber=1&pageSize=10
+Accept: application/json
+
+###
+
+### GET Paged Service Requests (Filtered by Status, e.g. Open = 0)
+# Expected: 200 OK with PagedResponse format
+GET {{baseUrl}}/api/requests?pageNumber=1&pageSize=10&status=0
+Accept: application/json
+
+###
+
+### GET Service Request Details By ID
+# Expected: 200 OK with full details (Vehicle, Customer, Quotation, Invoice, StatusHistory)
+GET {{baseUrl}}/api/requests/{{serviceRequestId}}
+Accept: application/json
 
 ###

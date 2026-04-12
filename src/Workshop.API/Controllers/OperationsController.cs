@@ -1,12 +1,16 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Workshop.API.Routes;
 using Workshop.Application.Features.Quotations.Commands;
 using Workshop.Application.Features.Quotations.DTOs;
 using Workshop.Application.Features.ServiceRequests.Commands;
+using Workshop.Application.Features.ServiceRequests.Queries;
 using Workshop.Application.Features.ServiceRequests.DTOs;
 using Workshop.Application.Features.QC.Commands;
 using Workshop.Application.Features.QC.DTOs;
 using Workshop.Application.Interfaces;
+using Workshop.Domain.Enums;
+using Workshop.Domain.Common;
 
 namespace Workshop.API.Controllers;
 
@@ -19,15 +23,21 @@ public sealed class OperationsController : BaseApiController
     private readonly ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> _generateQuotationHandler;
     private readonly ICommandHandler<UpdateServiceRequestStatusCommand, Guid> _updateStatusHandler;
     private readonly ICommandHandler<PerformQCCommand, Guid> _performQCHandler;
+    private readonly IRequestHandler<GetPagedServiceRequestsQuery, Result<PagedResult<ServiceRequestSummaryDto>>> _getPagedRequestsHandler;
+    private readonly IRequestHandler<GetServiceRequestByIdQuery, Result<ServiceRequestDetailsDto>> _getRequestByIdHandler;
 
     public OperationsController(
         ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> generateQuotationHandler,
         ICommandHandler<UpdateServiceRequestStatusCommand, Guid> updateStatusHandler,
-        ICommandHandler<PerformQCCommand, Guid> performQCHandler)
+        ICommandHandler<PerformQCCommand, Guid> performQCHandler,
+        IRequestHandler<GetPagedServiceRequestsQuery, Result<PagedResult<ServiceRequestSummaryDto>>> getPagedRequestsHandler,
+        IRequestHandler<GetServiceRequestByIdQuery, Result<ServiceRequestDetailsDto>> getRequestByIdHandler)
     {
         _generateQuotationHandler = generateQuotationHandler;
         _updateStatusHandler = updateStatusHandler;
         _performQCHandler = performQCHandler;
+        _getPagedRequestsHandler = getPagedRequestsHandler;
+        _getRequestByIdHandler = getRequestByIdHandler;
     }
 
     /// <summary>
@@ -95,6 +105,37 @@ public sealed class OperationsController : BaseApiController
         };
 
         var result = await _performQCHandler.HandleAsync(command, ct);
+
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Gets a paginated list of service requests, optionally filtered by status.
+    /// </summary>
+    [HttpGet(ApiRoutes.Operations.GetPaged)]
+    [ProducesResponseType(typeof(Contracts.PagedResponse<ServiceRequestSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] ServiceRequestStatus? status = null,
+        CancellationToken ct = default)
+    {
+        var query = new GetPagedServiceRequestsQuery(pageNumber, pageSize, status);
+        var result = await _getPagedRequestsHandler.Handle(query, ct);
+
+        return HandlePagedResult(result);
+    }
+
+    /// <summary>
+    /// Gets full details of a specific service request.
+    /// </summary>
+    [HttpGet(ApiRoutes.Operations.GetById)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<ServiceRequestDetailsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<ServiceRequestDetailsDto>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken ct)
+    {
+        var query = new GetServiceRequestByIdQuery(id);
+        var result = await _getRequestByIdHandler.Handle(query, ct);
 
         return HandleResult(result);
     }

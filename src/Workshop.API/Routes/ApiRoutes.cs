@@ -35,6 +35,12 @@ public static class ApiRoutes
         /// <summary>Controller-level base route: <c>api/requests</c>.</summary>
         public const string Base = "api/requests";
 
+        /// <summary>GET  api/requests — paginated list of service requests.</summary>
+        public const string GetPaged = "";
+
+        /// <summary>GET  api/requests/{id} — full details of a specific service request.</summary>
+        public const string GetById = "{id:guid}";
+
         /// <summary>POST  api/requests/{id}/quotations — generate a quotation for a service request.</summary>
         public const string GenerateQuotation = "{id:guid}/quotations";
 
