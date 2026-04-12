@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Workshop.API.Routes;
 using Workshop.Application.Commands;
 using Workshop.Application.Interfaces;
 
@@ -7,19 +8,18 @@ namespace Workshop.API.Controllers;
 /// <summary>
 /// Handles customer decisions on quotations: approval and rejection.
 /// </summary>
-[ApiController]
-[Route("api/quotations")]
-public sealed class QuotationsController : ControllerBase
+[Route(ApiRoutes.Quotations.Base)]
+public sealed class QuotationsController : BaseApiController
 {
     private readonly ICommandHandler<ApproveQuotationCommand, ApproveQuotationResult> _approveHandler;
-    private readonly ICommandHandler<RejectQuotationCommand, RejectQuotationResult> _rejectHandler;
+    private readonly ICommandHandler<RejectQuotationCommand,  RejectQuotationResult>  _rejectHandler;
 
     public QuotationsController(
         ICommandHandler<ApproveQuotationCommand, ApproveQuotationResult> approveHandler,
-        ICommandHandler<RejectQuotationCommand, RejectQuotationResult> rejectHandler)
+        ICommandHandler<RejectQuotationCommand,  RejectQuotationResult>  rejectHandler)
     {
         _approveHandler = approveHandler;
-        _rejectHandler = rejectHandler;
+        _rejectHandler  = rejectHandler;
     }
 
     /// <summary>
@@ -30,26 +30,17 @@ public sealed class QuotationsController : ControllerBase
     /// <param name="id">The ID of the quotation to approve.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">Quotation approved; work is now in progress.</response>
+    /// <response code="400">Business rule violation (e.g. quotation is not in Pending state).</response>
     /// <response code="404">Quotation not found.</response>
-    /// <response code="422">Business rule violation (e.g. quotation is not in Pending state).</response>
-    [HttpPost("{id:guid}/approve")]
-    [ProducesResponseType(typeof(ApproveQuotationResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [HttpPost(ApiRoutes.Quotations.Approve)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<ApproveQuotationResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<ApproveQuotationResult>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<ApproveQuotationResult>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ApproveQuotation([FromRoute] Guid id, CancellationToken ct)
     {
         var command = new ApproveQuotationCommand(id);
-        var result = await _approveHandler.HandleAsync(command, ct);
-
-        if (!result.IsSuccess)
-        {
-            var isNotFound = result.Error?.Contains("was not found", StringComparison.OrdinalIgnoreCase) ?? false;
-            return isNotFound
-                ? Problem(detail: result.Error, statusCode: StatusCodes.Status404NotFound)
-                : Problem(detail: result.Error, statusCode: StatusCodes.Status422UnprocessableEntity);
-        }
-
-        return Ok(result.Value);
+        var result  = await _approveHandler.HandleAsync(command, ct);
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -60,25 +51,16 @@ public sealed class QuotationsController : ControllerBase
     /// <param name="id">The ID of the quotation to reject.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">Quotation rejected; inspection-fee invoice created.</response>
+    /// <response code="400">Business rule violation (e.g. quotation is not in Pending state).</response>
     /// <response code="404">Quotation not found.</response>
-    /// <response code="422">Business rule violation (e.g. quotation is not in Pending state).</response>
-    [HttpPost("{id:guid}/reject")]
-    [ProducesResponseType(typeof(RejectQuotationResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [HttpPost(ApiRoutes.Quotations.Reject)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<RejectQuotationResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<RejectQuotationResult>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<RejectQuotationResult>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RejectQuotation([FromRoute] Guid id, CancellationToken ct)
     {
         var command = new RejectQuotationCommand(id);
-        var result = await _rejectHandler.HandleAsync(command, ct);
-
-        if (!result.IsSuccess)
-        {
-            var isNotFound = result.Error?.Contains("was not found", StringComparison.OrdinalIgnoreCase) ?? false;
-            return isNotFound
-                ? Problem(detail: result.Error, statusCode: StatusCodes.Status404NotFound)
-                : Problem(detail: result.Error, statusCode: StatusCodes.Status422UnprocessableEntity);
-        }
-
-        return Ok(result.Value);
+        var result  = await _rejectHandler.HandleAsync(command, ct);
+        return HandleResult(result);
     }
 }
