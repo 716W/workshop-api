@@ -22,6 +22,9 @@ public static class ApiRoutes
 
         /// <summary>POST  api/reception/create — log a new customer service request.</summary>
         public const string Create = "create";
+
+        /// <summary>POST  api/requests/{id}/release — close and release the vehicle.</summary>
+        public const string Release = "/api/requests/{id:guid}/release";
     }
 
     // ── Operations ────────────────────────────────────────────────────────────
@@ -34,6 +37,12 @@ public static class ApiRoutes
 
         /// <summary>POST  api/requests/{id}/quotations — generate a quotation for a service request.</summary>
         public const string GenerateQuotation = "{id:guid}/quotations";
+
+        /// <summary>PATCH  api/requests/{id}/status — update the service request status.</summary>
+        public const string UpdateStatus = "{id:guid}/status";
+
+        /// <summary>POST  api/requests/{id}/qc — perform quality control check.</summary>
+        public const string PerformQC = "{id:guid}/qc";
     }
 
     // ── Quotations ────────────────────────────────────────────────────────────
@@ -49,6 +58,21 @@ public static class ApiRoutes
 
         /// <summary>POST  api/quotations/{id}/reject — reject a pending quotation.</summary>
         public const string Reject = "{id:guid}/reject";
+    }
+
+    // ── Billing ───────────────────────────────────────────────────────────────
+
+    /// <summary>Routes for <c>BillingController</c>.</summary>
+    public static class Billing
+    {
+        /// <summary>Controller-level base route: <c>api</c>.</summary>
+        public const string Base = "api";
+
+        /// <summary>POST  api/requests/{id}/invoice — generate invoice for request.</summary>
+        public const string GenerateInvoice = "requests/{id:guid}/invoice";
+
+        /// <summary>POST  api/invoices/{id}/pay — pay a specific invoice.</summary>
+        public const string PayInvoice = "invoices/{id:guid}/pay";
     }
 
     // ── Inventory ─────────────────────────────────────────────────────────────

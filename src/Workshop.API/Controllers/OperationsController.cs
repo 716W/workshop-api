@@ -60,7 +60,7 @@ public sealed class OperationsController : BaseApiController
     /// <summary>
     /// Updates the status of a service request and records history.
     /// </summary>
-    [HttpPatch("{id:guid}/status")]
+    [HttpPatch(ApiRoutes.Operations.UpdateStatus)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
@@ -78,7 +78,7 @@ public sealed class OperationsController : BaseApiController
     /// <summary>
     /// Performs Quality Control (QC) for a service request.
     /// </summary>
-    [HttpPost("{id:guid}/qc")]
+    [HttpPost(ApiRoutes.Operations.PerformQC)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]

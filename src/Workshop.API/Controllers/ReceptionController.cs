@@ -50,7 +50,10 @@ public sealed class ReceptionController : BaseApiController
         return HandleCreated(result, location);
     }
 
-    [HttpPost("/api/requests/{id:guid}/release")]
+    [HttpPost(ApiRoutes.Reception.Release)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Release(Guid id)
     {
         var command = new CloseServiceRequestCommand(id);
