@@ -57,17 +57,16 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
 - [x] **CQRS Command**: Create `GenerateQuotationCommand` and its Handler. The handler must: retrieve the ServiceRequest, create the Quotation, calculate total costs, update the request status, and save changes via the repository. Return a Success `Result<Guid>` with the Quotation ID.
 - [x] **API Controller**: Add a `POST /api/requests/{id}/quotations` endpoint in `OperationsController` to trigger this command.
 
-## 🔄 Phase 4: Scenario 3 - Approval & Inventory Integration
+## 🔄 Phase 5: Scenario 3 - Approval, Rejection & Inventory
 
-- [x] **Domain Updates**: Add `QuotationStatus` enum (Pending, Approved, Rejected). Add `Status` to `Quotation`. Create `PurchaseNeed` entity (PartName, Quantity, ServiceRequestId, DateRequested). Extend `ServiceRequestStatus` with `In_Progress` and `Closed_Rejected`. Create Domain Event `QuotationApprovedEvent` (implements `INotification`). Add `ApproveQuotation()` and `RejectQuotation()` behaviours to `ServiceRequest`. Refactor `Invoice` to support optional `ServiceRequestId` FK.
-- [x] **Add MediatR**: Add MediatR 12.x NuGet package to Application project and register in DI.
-- [x] **Reject Command**: Create `RejectQuotationCommand` and Handler. Change `ServiceRequest` status to `Closed_Rejected`, auto-generate pending `Invoice` for "Inspection Fee" (fixed 150.00).
-- [x] **Approve Command**: Create `ApproveQuotationCommand` and Handler. Change `ServiceRequest` status to `In_Progress`, mark Quotation as `Approved`, publish `QuotationApprovedEvent` via MediatR.
-- [x] **Event Handler (Inventory/Purchasing)**: Create `AllocatePartsEventHandler` implementing `INotificationHandler<QuotationApprovedEvent>`. Loop through Part items, deduct stock if available, create `PurchaseNeed` for out-of-stock parts.
-- [x] **EF Core + Migration**: Add `PurchaseNeed` DbSet, update `QuotationConfiguration` (Status), update `InvoiceConfiguration` (nullable FK), add `PurchaseNeedConfiguration`. Run migration `Phase4_ApprovalRejection`.
-- [x] **API Controller**: Add `POST /api/quotations/{id}/approve` and `POST /api/quotations/{id}/reject` in a new `QuotationsController`.
+- [x] **Domain Updates**: Add `Status` (Pending, Approved, Rejected) to `Quotation`. Create a `PurchaseNeed` entity (Id, PartId/Name, Quantity, ServiceRequestId, DateRequested, IsResolved) for tracking out-of-stock items. Create a Domain Event `QuotationApprovedEvent` (inherits `INotification` from MediatR) containing the QuotationId.
+- [x] **Reject Command**: Create `RejectQuotationCommand` and Handler. It changes the `ServiceRequest` status to `Closed_Rejected` and can optionally log an "Inspection Fee".
+- [x] **Approve Command**: Create `ApproveQuotationCommand` and Handler. It changes `ServiceRequest` status to `In_Progress`, marks the `Quotation` as `Approved`, and publishes `QuotationApprovedEvent` via MediatR.
+- [x] **Inventory Event Handler**: Create `AllocatePartsEventHandler` (`INotificationHandler<QuotationApprovedEvent>`). When triggered, it loops through the `Part` items in the quotation. (For now, assume parts are out-of-stock to test the logic) -> It creates a `PurchaseNeed` record using the repository so the purchasing department knows to buy them.
+- [x] **API Controller**: Add `POST /api/quotations/{id}/approve` and `POST /api/quotations/{id}/reject` in the appropriate controller.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test the Approve and Reject endpoints.
 
-## ⚙️ Phase 5: Infrastructure Wiring & MySQL Integration
+## 🔧 Phase 6: Scenario 4 - Repair Execution & Status Tracking
 
 - [x] **Database Setup**: Install `Pomelo.EntityFrameworkCore.MySql` in the Infrastructure layer. Update `appsettings.json` and `appsettings.Development.json` with a standard MySQL connection string (e.g., `Server=localhost;Database=WorkshopDb;User=root;Password=;`).
 - [x] **Infrastructure DI**: Refactored `DependencyInjection.cs` in Infrastructure → renamed to `AddInfrastructureServices`. Registers `DbContext` (Pomelo MySQL, pinned 8.0.36), `AuditableEntityInterceptor` singleton, generic `IRepository<>` and `IUnitOfWork`.
@@ -75,14 +74,54 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
 - [x] **API Wiring & Middleware**: Updated `Program.cs` — calls `AddApplicationServices()` and `AddInfrastructureServices()`. Global `IExceptionHandler` and `AddProblemDetails()` registered. `AddFluentValidationAutoValidation()` kept in API layer. Pipeline: `UseExceptionHandler() → UseHttpsRedirection() → UseAuthorization() → MapControllers()`.
 - [x] **Migrations**: Removed SQL Server migration files, added `IDesignTimeDbContextFactory` for offline scaffolding. Ran `dotnet ef migrations add InitialCreate` ✅. Run `dotnet ef database update` after updating credentials in appsettings.
 
-## 📚 Phase 11: Project Documentation (Docs-as-Code)
+- [x] **Domain Entities**: Create a `ServiceRequestStatusHistory` entity (Id, ServiceRequestId, OldStatus, NewStatus, Notes, CreatedAt). Ensure the relationship is configured in the `DbContext`.
+- [x] **Domain Enums**: Expand the `Status` Enum (if not already done) to include: `Repairing`, `Waiting_For_Parts`, `External_Work`, and `Ready_For_QC`.
+- [x] **CQRS & DTOs**: Create `UpdateServiceRequestStatusDto` (NewStatus, Notes). Create `UpdateServiceRequestStatusCommand` and its Handler.
+- [x] **Business Rules (Handler)**: The handler must fetch the request, generate a new `ServiceRequestStatusHistory` record, update the main request's status to the new one, and save both via the repository.
+- [x] **API Controller**: Add a `PATCH /api/requests/{id}/status` endpoint in the `OperationsController` to handle this command.
+- [x] **Migrations**: Run a new EF Core migration (`AddStatusHistory`) to create the new table in MySQL.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a scenario showing a status update (e.g., to `Waiting_For_Parts` with a note).
 
+## 🔍 Phase 7: Scenario 5 - Quality Control (QC)
+- [x] **Domain Enums**: Add `Ready_For_Invoicing` to the `Status` Enum (if not present).
+- [x] **CQRS & DTOs**: Create `PerformQCDto` (bool IsPassed, string Notes). Create `PerformQCCommand` and its Handler.
+- [x] **Business Rules (Handler)**: The handler checks if the current status is `Ready_For_QC`.
+  - If `IsPassed` == true, set new status to `Ready_For_Invoicing`.
+  - If `IsPassed` == false, set new status to `Repairing` (or `QC_Failed`).
+  - Call the `UpdateStatus` method (from Phase 6) to ensure the status change and notes are logged in `ServiceRequestStatusHistory`.
+- [x] **API Controller**: Add `POST /api/requests/{id}/qc` in the `OperationsController`.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a QC scenario (e.g., failing it first with a note, then passing it).
+
+## 💳 Phase 8: Scenario 6 - Invoicing & Payment
+- [x] **Domain Entities**: Create `Invoice` (Id, ServiceRequestId, SubTotal, TaxAmount, Discount, TotalAmount, Status [Unpaid, Paid]). Create `Payment` (Id, InvoiceId, Amount, PaymentMethod [Cash, Card, Transfer], PaymentDate).
+- [x] **Generate Invoice Command**: Create `GenerateInvoiceCommand` and Handler. It fetches the Approved `Quotation` for the request, calculates SubTotal, adds 15% Tax, creates the `Invoice`, and changes `ServiceRequest` status to `Pending_Payment`.
+- [x] **Pay Invoice Command**: Create `ProcessPaymentCommand` (InvoiceId, Amount, PaymentMethod) and Handler. It creates a `Payment` record. If total payments >= `Invoice.TotalAmount`, mark `Invoice` as `Paid` and update `ServiceRequest` status to `Ready_For_Release`.
+- [x] **API Controller**: Add `POST /api/requests/{id}/invoice` and `POST /api/invoices/{id}/pay` in a new `BillingController`.
+- [x] **Migrations**: Run a new EF Core migration (`AddInvoicing`) to create the Invoice and Payment tables.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to generate an invoice and pay it in full.
+
+## 🏁 Phase 9: Scenario 7 - Vehicle Release & Closure
+- [x] **Domain Updates**: Add `Closed_Success` to the `Status` Enum. Add `ClosedAt` (nullable DateTime) to `ServiceRequest`. Create a `WorkerCommission` entity (Id, WorkerId, ServiceRequestId, Amount, CreatedAt).
+- [x] **CQRS Command**: Create `CloseServiceRequestCommand` and Handler.
+- [x] **Business Rules (Handler)**: Ensure the request status is `Ready_For_Release`. Change status to `Closed_Success` and set `ClosedAt` to `DateTime.UtcNow`. Calculate the mechanic's commission (e.g., if `Fixed`, use `CommissionValue`; if `Percentage`, calculate based on `Invoice.SubTotal` or Labor total) and create a `WorkerCommission` record.
+- [x] **API Controller**: Add `POST /api/requests/{id}/release` in the `ReceptionController` (or OperationsController).
+- [x] **Migrations**: Run a final EF Core migration (`AddWorkerCommissions`) to update the database.
+- [x] **Testing**: Add the final API call to `tests/Manual/WorkshopScenarios.http` to complete the full lifecycle!
+
+## 🗂️ Phase 10: Refactoring & Comprehensive Testing
+- [x] **Domain Organization**: Group classes in the `Domain` project into descriptive folders: `/Entities`, `/Enums`, `/Events`, and `/ValueObjects` (if any). Update namespaces accordingly.
+- [x] **Application Organization (Feature Folders)**: Refactor the `Application` project using Feature folders. Create a `/Features` folder with subfolders like `ServiceRequests`, `Quotations`, `Invoicing`, and `QC`. Move the relevant Commands, Handlers, and DTOs into these feature folders. Update namespaces globally to ensure the solution compiles successfully.
+- [x] **Infrastructure Organization**: Ensure `Infrastructure` is cleanly grouped into `/Persistence` (DbContext, Interceptors, Migrations), `/Repositories`, and `/Services` (if any).
+- [x] **HTTP Testing (Validations)**: Update `tests/Manual/WorkshopScenarios.http` with "Sad Path" Validation cases (e.g., POST a Request with missing/invalid data, negative quantity in Quotation).
+- [x] **HTTP Testing (Business Rules)**: Add "Sad Path" Business logic cases to the `.http` file (e.g., Try to approve a quotation for a closed request, try to pay an already paid invoice, try to release a vehicle that is not `Ready_For_Release`).
+- [x] **Final Build Check**: Run `dotnet build` to guarantee no namespace or missing reference errors exist after the folder restructuring.
+
+## 📚 Phase 11: Project Documentation (Docs-as-Code)
 - [x] **Setup Docs Structure**: Create a `docs` folder at the root of the project. Inside it, create subfolders: `01-Business-Flows`, `02-Features`, `03-Architecture`, and `04-Future-Ideas`.
 - [x] **Document Workshop Flow**: Create a file named `workshop-lifecycle.md` inside `docs/01-Business-Flows`. Write down the complete 7-scenario lifecycle of a vehicle in the workshop (from Check-In to Release, including QC and Invoicing) based on our previous discussions. Use clean Markdown with headers, bullet points, and emojis for readability.
 - [x] **Main README**: Update the root `README.md` (or create an index in the `docs` folder) to link to this new `workshop-lifecycle.md` file.
 
 ## 🏗️ Phase 12: API Standardization (Routes & Responses)
-
 - [x] **Unified Routing**: Created static class `ApiRoutes` in `src/Workshop.API/Routes/ApiRoutes.cs`. Defines constants for all existing routes via nested static classes per feature (`Reception`, `Operations`, `Quotations`, `Inventory`, `JobCards`). Each class exposes a `Base` constant for the `[Route]` attribute and named constants for each action template.
 - [x] **Unified Response Contracts**: Created `ApiResponse<T>` and non-generic `ApiResponse` in `src/Workshop.API/Contracts/ApiResponse.cs` (fields: `Data`, `Message`, `IsSuccess`). Created `PagedResponse<T>` in `src/Workshop.API/Contracts/PagedResponse.cs` (adds `PageNumber`, `PageSize`, `TotalRecords`, computed `TotalPages`).
 - [x] **Base API Controller**: Created `BaseApiController` in `src/Workshop.API/Controllers/BaseApiController.cs` inheriting `ControllerBase` with `[ApiController]`. Implements `HandleResult<T>(Result<T>)` → 200/400/404, `HandleCreated<T>(Result<T>, string)` → 201/400/404, and `HandlePagedResult<TItem>(Result<PagedResult<TItem>>)` → 200/400/404. Maps internal `Result<T>` to `ApiResponse<T>`-wrapped HTTP responses. The `GlobalExceptionHandler` (Phase 1.5) remains untouched — it handles uncaught exceptions and returns 500 ProblemDetails.

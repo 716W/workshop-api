@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Workshop.API.Routes;
-using Workshop.Application.Commands;
-using Workshop.Application.DTOs;
+using Workshop.Application.Features.Quotations.Commands;
+using Workshop.Application.Features.Quotations.DTOs;
+using Workshop.Application.Features.ServiceRequests.Commands;
+using Workshop.Application.Features.ServiceRequests.DTOs;
+using Workshop.Application.Features.QC.Commands;
+using Workshop.Application.Features.QC.DTOs;
 using Workshop.Application.Interfaces;
 
 namespace Workshop.API.Controllers;
@@ -13,11 +17,17 @@ namespace Workshop.API.Controllers;
 public sealed class OperationsController : BaseApiController
 {
     private readonly ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> _generateQuotationHandler;
+    private readonly ICommandHandler<UpdateServiceRequestStatusCommand, Guid> _updateStatusHandler;
+    private readonly ICommandHandler<PerformQCCommand, Guid> _performQCHandler;
 
     public OperationsController(
-        ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> generateQuotationHandler)
+        ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> generateQuotationHandler,
+        ICommandHandler<UpdateServiceRequestStatusCommand, Guid> updateStatusHandler,
+        ICommandHandler<PerformQCCommand, Guid> performQCHandler)
     {
         _generateQuotationHandler = generateQuotationHandler;
+        _updateStatusHandler = updateStatusHandler;
+        _performQCHandler = performQCHandler;
     }
 
     /// <summary>
@@ -40,12 +50,52 @@ public sealed class OperationsController : BaseApiController
         [FromBody] CreateQuotationDto dto,
         CancellationToken ct)
     {
-        // FluentValidation auto-validation runs before this body executes.
-
         var command = new GenerateQuotationCommand(id, dto);
         var result  = await _generateQuotationHandler.HandleAsync(command, ct);
 
         var location = Url.Action(nameof(GenerateQuotation), new { id }) ?? string.Empty;
         return HandleCreated(result, location);
+    }
+
+    /// <summary>
+    /// Updates the status of a service request and records history.
+    /// </summary>
+    [HttpPatch("{id:guid}/status")]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateStatus(
+        [FromRoute] Guid id,
+        [FromBody] UpdateServiceRequestStatusDto dto,
+        CancellationToken ct)
+    {
+        var command = new UpdateServiceRequestStatusCommand(id, dto);
+        var result = await _updateStatusHandler.HandleAsync(command, ct);
+
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Performs Quality Control (QC) for a service request.
+    /// </summary>
+    [HttpPost("{id:guid}/qc")]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PerformQC(
+        [FromRoute] Guid id,
+        [FromBody] PerformQCDto dto,
+        CancellationToken ct)
+    {
+        var command = new PerformQCCommand 
+        { 
+            ServiceRequestId = id, 
+            IsPassed = dto.IsPassed, 
+            Notes = dto.Notes 
+        };
+
+        var result = await _performQCHandler.HandleAsync(command, ct);
+
+        return HandleResult(result);
     }
 }

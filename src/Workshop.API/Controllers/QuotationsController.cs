@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Workshop.API.Routes;
-using Workshop.Application.Commands;
+using Workshop.Application.Features.Quotations.Commands;
 using Workshop.Application.Interfaces;
 
 namespace Workshop.API.Controllers;

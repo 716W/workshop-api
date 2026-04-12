@@ -1,23 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Workshop.API.Routes;
-using Workshop.Application.Commands;
-using Workshop.Application.DTOs;
+using Workshop.Application.Features.ServiceRequests.Commands;
+using Workshop.Application.Features.ServiceRequests.DTOs;
 using Workshop.Application.Interfaces;
 
 namespace Workshop.API.Controllers;
 
 /// <summary>
-/// Handles front-desk / reception operations: logging new customer service requests.
+/// Handles front-desk / reception operations: logging new customer service requests & releasing.
 /// </summary>
 [Route(ApiRoutes.Reception.Base)]
 public sealed class ReceptionController : BaseApiController
 {
     private readonly ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> _handler;
+    private readonly MediatR.IMediator _mediator;
 
     public ReceptionController(
-        ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> handler)
+        ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> handler,
+        MediatR.IMediator mediator)
     {
         _handler = handler;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -39,14 +42,20 @@ public sealed class ReceptionController : BaseApiController
         [FromBody] CreateServiceRequestDto dto,
         CancellationToken ct)
     {
-        // FluentValidation auto-validation runs before this action body executes.
-        // If ModelState is invalid, ASP.NET Core returns 400 automatically.
-
         var command = new CreateServiceRequestCommand(dto);
         var result  = await _handler.HandleAsync(command, ct);
 
         // Build a Location URI pointing back to this action so the 201 header is meaningful.
         var location = Url.Action(nameof(Create)) ?? ApiRoutes.Reception.Base;
         return HandleCreated(result, location);
+    }
+
+    [HttpPost("/api/requests/{id:guid}/release")]
+    public async Task<IActionResult> Release(Guid id)
+    {
+        var command = new CloseServiceRequestCommand(id);
+        var result = await _mediator.Send(command);
+
+        return HandleResult(result);
     }
 }

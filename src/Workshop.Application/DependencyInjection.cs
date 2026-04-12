@@ -2,11 +2,6 @@ using FluentValidation;
 
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Workshop.Application.Commands;
-using Workshop.Application.Handlers;
-using Workshop.Application.Interfaces;
-using Workshop.Application.Services;
-using Workshop.Application.Validators;
 
 namespace Workshop.Application;
 
@@ -40,6 +35,21 @@ public static class DependencyInjection
         services.AddScoped<
             ICommandHandler<RejectQuotationCommand, RejectQuotationResult>,
             RejectQuotationCommandHandler>();
+
+        // Phase 6 – Scenario 4 Status Tracking
+        services.AddScoped<
+            ICommandHandler<UpdateServiceRequestStatusCommand, Guid>,
+            UpdateServiceRequestStatusCommandHandler>();
+
+        // Phase 7 – Scenario 5 QC
+        services.AddScoped<
+            ICommandHandler<PerformQCCommand, Guid>,
+            PerformQCCommandHandler>();
+
+        // Phase 7 - Scenario 5
+        services.AddScoped<
+            ICommandHandler<PerformQCCommand, Guid>,
+            PerformQCCommandHandler>();
 
         // ── MediatR – auto-discovers INotificationHandler<T> implementations ─
         services.AddMediatR(cfg =>

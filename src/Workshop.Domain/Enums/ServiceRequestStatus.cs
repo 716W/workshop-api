@@ -24,5 +24,32 @@ public enum ServiceRequestStatus
     In_Progress = 5,
 
     /// <summary>The customer rejected the quotation; an inspection fee invoice has been raised and the request is closed.</summary>
-    Closed_Rejected = 6
+    Closed_Rejected = 6,
+
+    /// <summary>Active mechanical or body repair work is currently being executed.</summary>
+    Repairing = 7,
+
+    /// <summary>The process is paused because parts ordered from an external supplier have not yet arrived.</summary>
+    Waiting_For_Parts = 8,
+
+    /// <summary>The vehicle has been sent to an external specialist (e.g., painting, specialized machine work).</summary>
+    External_Work = 9,
+
+    /// <summary>Repairs are completed and the vehicle is awaiting final Quality Control check.</summary>
+    Ready_For_QC = 10,
+
+    /// <summary>QC failed, returning to repairing state but marked for tracking.</summary>
+    QC_Failed = 11,
+
+    /// <summary>QC passed, vehicle is ready to be invoiced and delivered.</summary>
+    Ready_For_Invoicing = 12,
+
+    /// <summary>Invoice object has been generated, awaiting customer payment.</summary>
+    Pending_Payment = 13,
+
+    /// <summary>Invoice paid in full, vehicle is ready for final customer release.</summary>
+    Ready_For_Release = 14,
+
+    /// <summary>Vehicle released and fully completed successfully.</summary>
+    Closed_Success = 15
 }

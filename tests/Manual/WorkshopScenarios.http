@@ -1,111 +1,356 @@
 ### ============================================================
-### Workshop Management System — Manual Scenario Tests
-### ============================================================
-### Tool:  VS Code REST Client / JetBrains HTTP Client
-### Docs:  https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+###  Workshop Management System — Manual Scenario Test Suite
+###  Run these requests in order using the VS Code REST Client
+###  extension or JetBrains HTTP Client.
 ###
-### Run order: Execute the requests TOP → BOTTOM.
-### After Step 1 succeeds, copy the returned `requestId` from
-### the response body and paste it into the @serviceRequestId
-### variable below before executing Step 2.
+###  Scenario Coverage:
+###    Scenario 1 — Customer Check-In & Service Request Creation
+###    Scenario 2 — Workshop Inspection & Quotation Generation
 ### ============================================================
 
-@baseUrl        = http://localhost:5085
-@contentType    = application/json
+@baseUrl = http://localhost:5085
 
-# ── Seed IDs (replace with real GUIDs from your database) ────────────────────
-@customerId     = 11111111-1111-1111-1111-111111111111
-@mechanicId     = 22222222-2222-2222-2222-222222222222
-@vehicleId      = 33333333-3333-3333-3333-333333333333
+# -------------------------------------------------------------
+# SEED DATA (replace with real IDs from your database)
+# -------------------------------------------------------------
+# These GUIDs must exist in your database before running the
+# scenarios. Seed them via your DbContext or a migration.
+# -------------------------------------------------------------
+@customerId  = 3f5e1d8a-4b2c-4f6e-9a7d-1b3c5e7f9a2d
+@mechanicId  = 7a2b4c6d-8e0f-4a1b-9c3d-5e7f9a1b3c5e
+@vehicleId   = 1b3c5e7f-9a2d-4f6e-8b0c-2d4f6a8c0e2f
 
-# ── Captured from Step 1 response — fill in before running Step 2 ─────────────
+# After running Scenario 1, copy the returned `id` field here:
 @serviceRequestId = 00000000-0000-0000-0000-000000000000
 
 
 ### ============================================================
-### SCENARIO 1: Customer Check-In & Service Request Creation
-### Business Flow:
-###   A customer drives in with a vehicle for repair work.
-###   The receptionist logs the request, assigns an available
-###   mechanic, and records the agreed service price.
-###   The factory pattern will detect RequestType = Repair and
-###   instantiate a RepairRequest entity automatically.
+###  SCENARIO 1 — Customer Check-In / Service Request Creation
 ### ============================================================
+#
+#  Business Context:
+#    A customer arrives at the reception desk with their vehicle.
+#    The front-desk operator logs a Repair service request.
+#    The system uses the Factory Pattern to instantiate a
+#    RepairRequest entity and persists it with a status of "Open".
+#
+#  Expected Result:
+#    HTTP 201 Created
+#    Body contains: { id, requestType, status, customerId, ... }
+#
+#  Endpoint: POST /api/Reception/create
+#  Controller: ReceptionController
+#  Handler:   CreateServiceRequestCommandHandler
+# ---------------------------------------------------------------
 
-### [STEP 1] POST — Create a new Repair Service Request
-# Expected: 201 Created
-# Response body will contain the new ServiceRequest's `requestId`.
-# Copy that value into @serviceRequestId above before running Step 2.
-
-POST {{baseUrl}}/api/reception/create
-Content-Type: {{contentType}}
+POST {{baseUrl}}/api/Reception/create
+Content-Type: application/json
 
 {
   "requestType": 0,
   "customerId": "{{customerId}}",
   "mechanicId": "{{mechanicId}}",
   "vehicleId": "{{vehicleId}}",
-  "price": 350.00,
+  "price": 850.00,
   "commissionType": 1,
   "commissionValue": 10,
-  "description": "Customer reports engine knocking noise and difficulty starting. Full engine diagnostic and repair requested."
+  "description": "Customer reports engine overheating and a knocking sound at idle. Full diagnostic and repair required."
 }
 
 ###
-
-
-### ============================================================
-### SCENARIO 2: Inspection & Quotation Generation
-### Business Flow:
-###   After the mechanic inspects the vehicle, they identify the
-###   required parts and labour. A formal quotation is generated
-###   and attached to the existing ServiceRequest. The request
-###   status transitions automatically to PendingCustomerApproval.
+# NOTE: Copy the `id` from the 201 response above and paste it
+# into the @serviceRequestId variable at the top of this file
+# before running Scenario 2.
 ###
-### ⚠ Pre-condition: @serviceRequestId must be set (from Step 1).
-### ============================================================
 
-### [STEP 2] POST — Generate a Quotation for the Service Request
-# Expected: 201 Created
-# Response body will contain the new Quotation's `quotationId` and `grandTotal`.
+
+### ============================================================
+###  SCENARIO 2 — Workshop Inspection & Quotation Generation
+### ============================================================
+#
+#  Business Context:
+#    The assigned mechanic inspects the vehicle and identifies
+#    the required parts and labour. They generate a formal
+#    quotation for the customer's approval.
+#
+#    The system:
+#      1. Retrieves the existing ServiceRequest.
+#      2. Creates a Quotation with the provided line items.
+#      3. Calculates each item's TotalPrice = Quantity × UnitPrice.
+#      4. Transitions the ServiceRequest status to
+#         "PendingCustomerApproval".
+#      5. Returns the new Quotation ID and grand total.
+#
+#  Expected Result:
+#    HTTP 201 Created
+#    Body contains: { quotationId, grandTotal, serviceRequestId, ... }
+#
+#  Endpoint: POST /api/requests/{id}/quotations
+#  Controller: OperationsController
+#  Handler:   GenerateQuotationCommandHandler
+# ---------------------------------------------------------------
 
 POST {{baseUrl}}/api/requests/{{serviceRequestId}}/quotations
-Content-Type: {{contentType}}
+Content-Type: application/json
 
 {
   "items": [
     {
       "type": 0,
-      "description": "Engine Air Filter (OEM)",
+      "description": "Radiator Cap",
       "quantity": 1,
       "unitPrice": 45.00
     },
     {
       "type": 0,
-      "description": "Spark Plugs — Set of 4 (NGK Iridium)",
-      "quantity": 4,
-      "unitPrice": 18.50
+      "description": "Coolant (5 Litre)",
+      "quantity": 2,
+      "unitPrice": 75.00
     },
     {
       "type": 0,
-      "description": "Engine Oil — 5W-30 Synthetic (5L)",
-      "quantity": 2,
-      "unitPrice": 38.00
-    },
-    {
-      "type": 1,
-      "description": "Full Engine Diagnostic & Compression Test",
+      "description": "Serpentine Belt",
       "quantity": 1,
-      "unitPrice": 80.00
+      "unitPrice": 120.00
     },
     {
       "type": 1,
-      "description": "Spark Plugs Replacement Labour",
+      "description": "Engine Cooling System Flush & Refill",
       "quantity": 2,
-      "unitPrice": 30.00
+      "unitPrice": 95.00
+    },
+    {
+      "type": 1,
+      "description": "Engine Idle Diagnostic & Timing Check",
+      "quantity": 1,
+      "unitPrice": 150.00
     }
   ],
-  "notes": "Engine knock caused by worn spark plugs and dirty air filter. Oil change also recommended. All parts are OEM or equivalent grade. Estimated completion: 3 working hours."
+  "notes": "Radiator cap was holding pressure at 12 psi (below spec). Belt showed visible cracking. Full coolant system flush recommended every 40,000 km thereafter."
 }
+
+### ============================================================
+###  END OF SCENARIO TEST SUITE
+### ============================================================
+#
+#  QuotationItemType enum values:
+#    0 = Part   (physical spare part)
+#    1 = Labor  (workshop labour hours)
+#
+#  RequestType enum values:
+#    0 = Repair
+#    1 = PurchaseOnly
+#    2 = InspectionOnly
+#
+#  CommissionType enum values:
+#    0 = Fixed      (flat monetary amount)
+#    1 = Percentage (% of total price)
+#
+### ============================================================
+
+### ============================================================
+###  SCENARIO 3 — Customer Approval / Rejection
+### ============================================================
+
+# After running Scenario 2, copy the returned `quotationId` here:
+@quotationId = 00000000-0000-0000-0000-000000000000
+
+# Endpoint: POST /api/Quotations/{id}/approve
+# Expected Result: 200 OK
+POST {{baseUrl}}/api/Quotations/{{quotationId}}/approve
+Content-Type: application/json
+
+###
+
+# Endpoint: POST /api/Quotations/{id}/reject
+# Expected Result: 200 OK
+POST {{baseUrl}}/api/Quotations/{{quotationId}}/reject
+Content-Type: application/json
+
+
+### ============================================================
+###  SCENARIO 4 — Repair Execution & Status Tracking
+### ============================================================
+#
+#  Business Context:
+#    The mechanic starts repairing the vehicle and needs to 
+#    update the repair status to reflect real-time progress.
+#
+#  Endpoint: PATCH /api/requests/{id}/status
+#  Controller: OperationsController
+#  Handler:   UpdateServiceRequestStatusCommandHandler
+# ---------------------------------------------------------------
+
+# Update Status to Waiting_For_Parts (value: 8)
+PATCH {{baseUrl}}/api/requests/{{serviceRequestId}}/status
+Content-Type: application/json
+
+{
+  "newStatus": 8,
+  "notes": "Radiator cap is out of stock. Waiting for supplier delivery tomorrow morning."
+}
+
+
+### ============================================================
+###  SCENARIO 5 — Quality Control (QC)
+### ============================================================
+#
+#  Business Context:
+#    The mechanic completes work, status is set to Ready_For_QC (10).
+#    A supervisor inspects the vehicle. It first fails due to a note,
+#    then passes and progresses to Ready_For_Invoicing (12).
+#
+#  Endpoint: POST /api/requests/{id}/qc
+#  Controller: OperationsController
+#  Handler:   PerformQCCommandHandler
+# ---------------------------------------------------------------
+
+# First, transition the request to Ready_For_QC (10) manually
+PATCH {{baseUrl}}/api/requests/{{serviceRequestId}}/status
+Content-Type: application/json
+
+{
+  "newStatus": 10,
+  "notes": "All parts installed, vehicle is ready for final quality control."
+}
+
+###
+
+# Second, fail the QC inspection
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/qc
+Content-Type: application/json
+
+{
+  "isPassed": false,
+  "notes": "Coolant cap is not properly tightened. Send back to mechanic."
+}
+
+###
+
+# Third, transition it back to Ready_For_QC manually (after fixing the issue)
+PATCH {{baseUrl}}/api/requests/{{serviceRequestId}}/status
+Content-Type: application/json
+
+{
+  "newStatus": 10,
+  "notes": "Tightened coolant cap. Ready for QC again."
+}
+
+###
+
+# Fourth, pass the QC inspection
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/qc
+Content-Type: application/json
+
+{
+  "isPassed": true,
+  "notes": "Pressure holding steady. Engine sounds good. Ready for billing."
+}
+
+### ============================================================
+###  SCENARIO 6 — Invoicing & Payment
+### ============================================================
+#
+#  Business Context:
+#    The QC has passed, and the vehicle is 'Ready_For_Invoicing'.
+#    We will now generate the final invoice, transition the status
+#    to 'Pending_Payment', and proceed to pay the invoice in full.
+#
+#  Endpoint: POST /api/requests/{id}/invoice
+#  Controller: BillingController
+#  Handler:   GenerateInvoiceCommandHandler
+# ---------------------------------------------------------------
+
+# Generate the invoice for the service request
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/invoice
+Content-Type: application/json
+
+###
+# NOTE: Copy the `invoiceId` from the 200 OK response above
+# and paste it into the @invoiceId variable below to process payment
+###
+
+@invoiceId = 00000000-0000-0000-0000-000000000000
+
+# Endpoint: POST /api/invoices/{id}/pay
+# Controller: BillingController
+# Handler:   ProcessPaymentCommandHandler
+# ---------------------------------------------------------------
+
+# Pay the generated invoice in full (change amount to match total amount)
+POST {{baseUrl}}/api/invoices/{{invoiceId}}/pay
+Content-Type: application/json
+
+{
+  "amount": 1000.00,
+  "paymentMethod": 1,
+  "transactionReference": "TXN_CARD_0991823"
+}
+
+###
+# Endpoint: POST /api/requests/{id}/release
+# Controller: ReceptionController
+# Handler:   CloseServiceRequestCommandHandler
+# ---------------------------------------------------------------
+
+# Release the vehicle and calculate mechanic commission
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/release
+Content-Type: application/json
+
+### ==========================================================
+### PHASE 10: SAD PATHS - HTTP TESTING (VALIDATION & BUSINESS RULES)
+### ==========================================================
+
+### SAD PATH: Invalid Service Request (Validation Error)
+# Expected: 400 Bad Request with Validation Problem Details
+POST {{host}}/api/reception/requests
+Content-Type: application/json
+
+{
+  "requestType": 0,
+  "vehicleId": "00000000-0000-0000-0000-000000000000",
+  "customerId": "00000000-0000-0000-0000-000000000000",
+  "workerId": "00000000-0000-0000-0000-000000000000",
+  "price": -100,
+  "date": "2020-01-01T00:00:00Z"
+}
+
+###
+
+### SAD PATH: Invalid Quotation (Negative Quantity)
+# Expected: 400 Bad Request with Validation Problem Details
+POST {{host}}/api/operations/requests/{{requestId}}/quotations
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "type": 0,
+      "description": "Oil Filter",
+      "quantity": -5,
+      "unitPrice": 15.0
+    }
+  ]
+}
+
+###
+
+### SAD PATH: Reject ALREADY Approved Quotation (Business Logic Error)
+# Expected: 400 Bad Request or 409 Conflict with 'Cannot reject an already approved quotation'
+POST {{host}}/api/operations/quotations/{{quotationId}}/reject
+Content-Type: application/json
+
+{
+  "reason": "Change of mind"
+}
+
+###
+
+### SAD PATH: Release a Vehicle before it's Ready (Business Logic Error)
+# Expected: 400 Bad Request or 409 Conflict
+POST {{host}}/api/reception/requests/{{requestId}}/release
+Content-Type: application/json
+
+{}
 
 ###
