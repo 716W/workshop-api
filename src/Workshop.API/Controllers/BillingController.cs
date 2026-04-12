@@ -1,26 +1,37 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Workshop.API.Routes;
+using Workshop.Application.Features.Invoicing.Commands;
 using Workshop.Domain.Enums;
 
 namespace Workshop.API.Controllers;
 
-[ApiController]
-[Route("api")] // Route prefixes applied on methods to match requirements
-public class BillingController(IMediator mediator) : ControllerBase
+[Route(ApiRoutes.Billing.Base)]
+public class BillingController : BaseApiController
 {
-    [HttpPost("requests/{id:guid}/invoice")]
+    private readonly IMediator _mediator;
+
+    public BillingController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpPost(ApiRoutes.Billing.GenerateInvoice)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GenerateInvoice(Guid id)
     {
         var command = new GenerateInvoiceCommand(id);
-        var result = await mediator.Send(command);
+        var result = await _mediator.Send(command);
 
-        if (result.IsSuccess)
-            return Ok(new { InvoiceId = result.Value, Message = "Invoice generated successfully." });
-
-        return BadRequest(new { Error = result.Error });
+        return HandleResult(result);
     }
 
-    [HttpPost("invoices/{id:guid}/pay")]
+    [HttpPost(ApiRoutes.Billing.PayInvoice)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PayInvoice(Guid id, [FromBody] PayInvoiceRequest request)
     {
         var command = new ProcessPaymentCommand(
@@ -30,12 +41,9 @@ public class BillingController(IMediator mediator) : ControllerBase
             TransactionReference: request.TransactionReference ?? string.Empty
         );
 
-        var result = await mediator.Send(command);
+        var result = await _mediator.Send(command);
 
-        if (result.IsSuccess)
-            return Ok(new { PaymentId = result.Value, Message = "Payment processed successfully." });
-
-        return BadRequest(new { Error = result.Error });
+        return HandleResult(result);
     }
 }
 

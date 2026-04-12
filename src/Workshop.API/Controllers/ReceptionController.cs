@@ -1,13 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
+using Workshop.API.Routes;
+using Workshop.Application.Features.ServiceRequests.Commands;
+using Workshop.Application.Features.ServiceRequests.DTOs;
+using Workshop.Application.Interfaces;
 
 namespace Workshop.API.Controllers;
 
 /// <summary>
 /// Handles front-desk / reception operations: logging new customer service requests & releasing.
 /// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public sealed class ReceptionController : ControllerBase
+[Route(ApiRoutes.Reception.Base)]
+public sealed class ReceptionController : BaseApiController
 {
     private readonly ICommandHandler<CreateServiceRequestCommand, ServiceRequestCreatedResult> _handler;
     private readonly MediatR.IMediator _mediator;
@@ -20,38 +23,42 @@ public sealed class ReceptionController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpPost("create")]
-    [ProducesResponseType(typeof(ServiceRequestCreatedResult), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    /// <summary>
+    /// Creates a new service request for a customer.
+    /// The correct entity type (Repair, Purchase, Inspection) is selected automatically
+    /// by the Factory based on the <c>requestType</c> field.
+    /// </summary>
+    /// <remarks>
+    /// - **Repair**: VehicleId and Description are required.
+    /// - **PurchaseOnly**: VehicleId is ignored; Description is required.
+    /// - **InspectionOnly**: VehicleId and Description (inspection notes) are required.
+    /// </remarks>
+    /// <response code="201">Request created successfully. Returns the created resource summary.</response>
+    /// <response code="400">Validation failed (missing required fields, invalid values, or business rule violation).</response>
+    [HttpPost(ApiRoutes.Reception.Create)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<ServiceRequestCreatedResult>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<ServiceRequestCreatedResult>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
         [FromBody] CreateServiceRequestDto dto,
         CancellationToken ct)
     {
         var command = new CreateServiceRequestCommand(dto);
-        var result = await _handler.HandleAsync(command, ct);
+        var result  = await _handler.HandleAsync(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return Problem(
-                detail: result.Error,
-                statusCode: StatusCodes.Status422UnprocessableEntity);
-        }
-
-        return CreatedAtAction(
-            actionName: nameof(Create),
-            value: result.Value);
+        // Build a Location URI pointing back to this action so the 201 header is meaningful.
+        var location = Url.Action(nameof(Create)) ?? ApiRoutes.Reception.Base;
+        return HandleCreated(result, location);
     }
 
-    [HttpPost("/api/requests/{id:guid}/release")]
+    [HttpPost(ApiRoutes.Reception.Release)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Release(Guid id)
     {
         var command = new CloseServiceRequestCommand(id);
         var result = await _mediator.Send(command);
 
-        if (result.IsSuccess)
-            return Ok(new { Message = "Vehicle successfully released and request closed." });
-
-        return UnprocessableEntity(new { Error = result.Error });
+        return HandleResult(result);
     }
 }

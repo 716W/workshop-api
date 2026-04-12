@@ -1,6 +1,6 @@
-﻿# Workshop System Development Plan
+# Workshop System Development Plan
 
-Current Status: Phase 9: Scenario 7 - Vehicle Release & Closure (COMPLETED!)
+Current Status: Phase 12 (API Standardization) COMPLETE ✅
 
 ## Rules for AI Agent
 
@@ -68,6 +68,12 @@ Current Status: Phase 9: Scenario 7 - Vehicle Release & Closure (COMPLETED!)
 
 ## 🔧 Phase 6: Scenario 4 - Repair Execution & Status Tracking
 
+- [x] **Database Setup**: Install `Pomelo.EntityFrameworkCore.MySql` in the Infrastructure layer. Update `appsettings.json` and `appsettings.Development.json` with a standard MySQL connection string (e.g., `Server=localhost;Database=WorkshopDb;User=root;Password=;`).
+- [x] **Infrastructure DI**: Refactored `DependencyInjection.cs` in Infrastructure → renamed to `AddInfrastructureServices`. Registers `DbContext` (Pomelo MySQL, pinned 8.0.36), `AuditableEntityInterceptor` singleton, generic `IRepository<>` and `IUnitOfWork`.
+- [x] **Application DI**: Refactored `DependencyInjection.cs` in Application → renamed to `AddApplicationServices`. Registers MediatR (auto-discover from assembly), FluentValidation validators (assembly scan via `AddValidatorsFromAssemblyContaining<>`), `IServiceRequestFactory`, all CQRS command handlers.
+- [x] **API Wiring & Middleware**: Updated `Program.cs` — calls `AddApplicationServices()` and `AddInfrastructureServices()`. Global `IExceptionHandler` and `AddProblemDetails()` registered. `AddFluentValidationAutoValidation()` kept in API layer. Pipeline: `UseExceptionHandler() → UseHttpsRedirection() → UseAuthorization() → MapControllers()`.
+- [x] **Migrations**: Removed SQL Server migration files, added `IDesignTimeDbContextFactory` for offline scaffolding. Ran `dotnet ef migrations add InitialCreate` ✅. Run `dotnet ef database update` after updating credentials in appsettings.
+
 - [x] **Domain Entities**: Create a `ServiceRequestStatusHistory` entity (Id, ServiceRequestId, OldStatus, NewStatus, Notes, CreatedAt). Ensure the relationship is configured in the `DbContext`.
 - [x] **Domain Enums**: Expand the `Status` Enum (if not already done) to include: `Repairing`, `Waiting_For_Parts`, `External_Work`, and `Ready_For_QC`.
 - [x] **CQRS & DTOs**: Create `UpdateServiceRequestStatusDto` (NewStatus, Notes). Create `UpdateServiceRequestStatusCommand` and its Handler.
@@ -109,3 +115,15 @@ Current Status: Phase 9: Scenario 7 - Vehicle Release & Closure (COMPLETED!)
 - [x] **HTTP Testing (Validations)**: Update `tests/Manual/WorkshopScenarios.http` with "Sad Path" Validation cases (e.g., POST a Request with missing/invalid data, negative quantity in Quotation).
 - [x] **HTTP Testing (Business Rules)**: Add "Sad Path" Business logic cases to the `.http` file (e.g., Try to approve a quotation for a closed request, try to pay an already paid invoice, try to release a vehicle that is not `Ready_For_Release`).
 - [x] **Final Build Check**: Run `dotnet build` to guarantee no namespace or missing reference errors exist after the folder restructuring.
+
+## 📚 Phase 11: Project Documentation (Docs-as-Code)
+- [x] **Setup Docs Structure**: Create a `docs` folder at the root of the project. Inside it, create subfolders: `01-Business-Flows`, `02-Features`, `03-Architecture`, and `04-Future-Ideas`.
+- [x] **Document Workshop Flow**: Create a file named `workshop-lifecycle.md` inside `docs/01-Business-Flows`. Write down the complete 7-scenario lifecycle of a vehicle in the workshop (from Check-In to Release, including QC and Invoicing) based on our previous discussions. Use clean Markdown with headers, bullet points, and emojis for readability.
+- [x] **Main README**: Update the root `README.md` (or create an index in the `docs` folder) to link to this new `workshop-lifecycle.md` file.
+
+## 🏗️ Phase 12: API Standardization (Routes & Responses)
+- [x] **Unified Routing**: Created static class `ApiRoutes` in `src/Workshop.API/Routes/ApiRoutes.cs`. Defines constants for all existing routes via nested static classes per feature (`Reception`, `Operations`, `Quotations`, `Inventory`, `JobCards`). Each class exposes a `Base` constant for the `[Route]` attribute and named constants for each action template.
+- [x] **Unified Response Contracts**: Created `ApiResponse<T>` and non-generic `ApiResponse` in `src/Workshop.API/Contracts/ApiResponse.cs` (fields: `Data`, `Message`, `IsSuccess`). Created `PagedResponse<T>` in `src/Workshop.API/Contracts/PagedResponse.cs` (adds `PageNumber`, `PageSize`, `TotalRecords`, computed `TotalPages`).
+- [x] **Base API Controller**: Created `BaseApiController` in `src/Workshop.API/Controllers/BaseApiController.cs` inheriting `ControllerBase` with `[ApiController]`. Implements `HandleResult<T>(Result<T>)` → 200/400/404, `HandleCreated<T>(Result<T>, string)` → 201/400/404, and `HandlePagedResult<TItem>(Result<PagedResult<TItem>>)` → 200/400/404. Maps internal `Result<T>` to `ApiResponse<T>`-wrapped HTTP responses. The `GlobalExceptionHandler` (Phase 1.5) remains untouched — it handles uncaught exceptions and returns 500 ProblemDetails.
+- [x] **Refactor Existing Controllers**: Updated `ReceptionController`, `OperationsController`, `QuotationsController`, and `BillingController` to inherit `BaseApiController`. Replaced all hardcoded `[Route(...)]` strings with `ApiRoutes.*` constants. Action methods now call `HandleCreated`, `HandleResult`, or `HandlePagedResult` — zero manual `if (!result.IsSuccess)` branches remaining.
+- [x] **Test File Update**: Verified `tests/Manual/WorkshopScenarios.http` is unchanged — all route URLs (`/api/reception/create`, `/api/requests/{id}/quotations`) are identical after standardization. No edit required. Build: ✅ 0 errors, 0 warnings.
