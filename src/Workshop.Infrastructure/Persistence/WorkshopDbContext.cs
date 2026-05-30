@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Workshop.Domain.Entities;
+using Workshop.Infrastructure.Persistence.Configurations;
 
 namespace Workshop.Infrastructure.Persistence;
 
@@ -32,5 +33,7 @@ public class WorkshopDbContext : DbContext
         // Automatically discovers and applies all IEntityTypeConfiguration<T>
         // implementations found in this assembly (Infrastructure layer).
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(WorkshopDbContext).Assembly);
+
+        modelBuilder.SeedData();
     }
 }

@@ -266,7 +266,7 @@ POST {{baseUrl}}/api/requests/{{serviceRequestId}}/invoice
 Content-Type: application/json
 
 ###
-# NOTE: Copy the `invoiceId` from the 200 OK response above
+# NOTE: Copy the `invoiceId` from the 201 Created response above
 # and paste it into the @invoiceId variable below to process payment
 ###
 
@@ -303,7 +303,7 @@ Content-Type: application/json
 
 ### SAD PATH: Invalid Service Request (Validation Error)
 # Expected: 400 Bad Request with Validation Problem Details
-POST {{baseUrl}}/api/reception/requests
+POST {{baseUrl}}/api/reception/create
 Content-Type: application/json
 
 {
@@ -319,7 +319,7 @@ Content-Type: application/json
 
 ### SAD PATH: Invalid Quotation (Negative Quantity)
 # Expected: 400 Bad Request with Validation Problem Details
-POST {{baseUrl}}/api/operations/requests/{{serviceRequestId}}/quotations
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/quotations
 Content-Type: application/json
 
 {
@@ -337,7 +337,7 @@ Content-Type: application/json
 
 ### SAD PATH: Reject ALREADY Approved Quotation (Business Logic Error)
 # Expected: 400 Bad Request or 409 Conflict with 'Cannot reject an already approved quotation'
-POST {{baseUrl}}/api/operations/quotations/{{quotationId}}/reject
+POST {{baseUrl}}/api/quotations/{{quotationId}}/reject
 Content-Type: application/json
 
 {
@@ -348,7 +348,7 @@ Content-Type: application/json
 
 ### SAD PATH: Release a Vehicle before it's Ready (Business Logic Error)
 # Expected: 400 Bad Request or 409 Conflict
-POST {{baseUrl}}/api/reception/requests/{{serviceRequestId}}/release
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/release
 Content-Type: application/json
 
 {}
