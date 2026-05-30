@@ -45,6 +45,18 @@ public class BillingController : BaseApiController
 
         return HandleResult(result);
     }
+
+    [HttpGet(ApiRoutes.Billing.GetById)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Application.Features.Invoicing.DTOs.InvoiceDetailsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetInvoice(Guid id)
+    {
+        var query = new Workshop.Application.Features.Invoicing.Queries.GetInvoiceByIdQuery(id);
+        var result = await _mediator.Send(query);
+
+        return HandleResult(result);
+    }
 }
 
 public class PayInvoiceRequest
