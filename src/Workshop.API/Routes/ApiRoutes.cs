@@ -79,6 +79,21 @@ public static class ApiRoutes
 
         /// <summary>POST  api/invoices/{id}/pay — pay a specific invoice.</summary>
         public const string PayInvoice = "invoices/{id:guid}/pay";
+
+        /// <summary>GET  api/invoices/{id} — get full details of an invoice.</summary>
+        public const string GetById = "invoices/{id:guid}";
+    }
+
+    // ── Workers ───────────────────────────────────────────────────────────────
+
+    /// <summary>Routes for <c>WorkersController</c>.</summary>
+    public static class Workers
+    {
+        /// <summary>Controller-level base route: <c>api/workers</c>.</summary>
+        public const string Base = "api/workers";
+
+        /// <summary>GET  api/workers/{id}/commissions — get paginated commissions of a worker.</summary>
+        public const string GetCommissions = "{id:guid}/commissions";
     }
 
     // ── Inventory ─────────────────────────────────────────────────────────────
