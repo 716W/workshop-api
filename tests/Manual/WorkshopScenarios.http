@@ -379,3 +379,21 @@ GET {{baseUrl}}/api/requests/{{serviceRequestId}}
 Accept: application/json
 
 ###
+
+### ==========================================================
+### PHASE 16: FINANCE & WORKERS MODULE
+### ==========================================================
+
+### GET Invoice Details By ID
+# Expected: 200 OK with full details (Payments, Service Request, Quotation)
+GET {{baseUrl}}/api/invoices/{{invoiceId}}
+Accept: application/json
+
+###
+
+### GET Worker Commissions
+# Expected: 200 OK with PagedResponse format
+GET {{baseUrl}}/api/workers/{{mechanicId}}/commissions?pageNumber=1&pageSize=10
+Accept: application/json
+
+###
