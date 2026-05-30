@@ -148,3 +148,11 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
 - [ ] **Commands (Write)**: Create `UpdateCustomerCommand` (adjusting Name, Phone, Email) and `UpdateVehicleCommand` (adjusting PlateNumber, Color, etc.).
 - [ ] **API Controller**: Create `CustomersController` and `VehiclesController` (or combine them) inheriting from `BaseApiController`. Add endpoints: `GET /api/customers` (with search query params), `GET /api/customers/{id}/history`, `PUT /api/customers/{id}`, and `PUT /api/vehicles/{id}`. Update `ApiRoutes` constants accordingly.
 - [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test searching for a customer, fetching their history, and updating their info.
+
+## 💰 Phase 16: Finance & Workers Module
+- [x] **Invoice Queries (Read)**: Create `GetInvoiceByIdQuery` (parameter: InvoiceId). The handler must use `Include()` to fetch the `Invoice`, its `Payments`, and the underlying `ServiceRequest` with its `Quotation` details to return a comprehensive `InvoiceDetailsDto`.
+- [x] **Worker Queries (Read)**: Create `GetWorkerCommissionsQuery` (parameter: WorkerId). The handler should return a `PagedResponse` of `WorkerCommissionDto` (showing the Amount, Date, and related ServiceRequestId).
+- [x] **API Controllers**: 
+    - Update the existing `BillingController` to include `GET /api/invoices/{id}`.
+    - Create a new `WorkersController` inheriting from `BaseApiController`. Add endpoint `GET /api/workers/{id}/commissions`.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test fetching an invoice's details and fetching a worker's commission history.
