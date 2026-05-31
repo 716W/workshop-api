@@ -4,11 +4,15 @@ using Workshop.Application.Features.ServiceRequests.Commands;
 using Workshop.Application.Features.ServiceRequests.DTOs;
 using Workshop.Application.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
+using Workshop.Domain.Common;
+
 namespace Workshop.API.Controllers;
 
 /// <summary>
 /// Handles front-desk / reception operations: logging new customer service requests & releasing.
 /// </summary>
+[Authorize]
 [Route(ApiRoutes.Reception.Base)]
 public sealed class ReceptionController : BaseApiController
 {
@@ -36,6 +40,7 @@ public sealed class ReceptionController : BaseApiController
     /// <response code="201">Request created successfully. Returns the created resource summary.</response>
     /// <response code="400">Validation failed (missing required fields, invalid values, or business rule violation).</response>
     [HttpPost(ApiRoutes.Reception.Create)]
+    [Authorize(Roles = "Receptionist,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<ServiceRequestCreatedResult>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<ServiceRequestCreatedResult>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
@@ -51,6 +56,7 @@ public sealed class ReceptionController : BaseApiController
     }
 
     [HttpPost(ApiRoutes.Reception.Release)]
+    [Authorize(Roles = "Receptionist,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]

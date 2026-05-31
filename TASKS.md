@@ -156,3 +156,13 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
     - Update the existing `BillingController` to include `GET /api/invoices/{id}`.
     - Create a new `WorkersController` inheriting from `BaseApiController`. Add endpoint `GET /api/workers/{id}/commissions`.
 - [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test fetching an invoice's details and fetching a worker's commission history.
+
+## 🔐 Phase 17: Business-Driven Auth & Identity
+
+- [/] **Identity Setup**: Install ASP.NET Core Identity packages in the `Infrastructure` layer. Configure Identity to use our SQL database. Create a custom `ApplicationUser` that adds a `WorkerId` (Guid?) property to link the login account directly to our `Worker` domain entity.
+- [ ] **Workshop Roles**: Seed the database with business-specific roles: `Manager`, `Receptionist`, `Mechanic`, `QC_Inspector`, `Inventory_Manager`, and `Accountant`.
+- [ ] **JWT Generation**: Implement an `IAuthService` that verifies credentials and generates a JWT. The JWT MUST contain claims for the user's Role AND their `WorkerId` (if assigned).
+- [ ] **Current User Context**: Create an `ICurrentUserService` interface in the Application layer (methods: `GetUserId()`, `GetWorkerId()`, `GetUserRole()`). Implement it in the API/Infrastructure layer using `IHttpContextAccessor` to read claims directly from the JWT.
+- [ ] **Auth Endpoints**: Create an `AuthController` inheriting from `BaseApiController`. Add endpoints: `POST /api/auth/login` and `POST /api/auth/register-worker` (which creates an `ApplicationUser` and links it to an existing `Worker`).
+- [ ] **Protecting Endpoints**: Add `[Authorize(Roles = "...")]` attributes to existing controllers. For example, `POST /api/requests/{id}/qc` should be restricted to `QC_Inspector` or `Manager`.
+- [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a Login request, extract the token, and use it in subsequent requests via `@authToken`.

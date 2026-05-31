@@ -2,9 +2,11 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Workshop.API.Routes;
 using Workshop.Application.Features.Workers.Queries;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Workshop.API.Controllers;
 
+[Authorize(Roles = "Manager,Accountant")]
 [Route(ApiRoutes.Workers.Base)]
 public class WorkersController : BaseApiController
 {

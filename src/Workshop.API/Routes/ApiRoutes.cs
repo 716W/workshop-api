@@ -12,6 +12,20 @@ namespace Workshop.API.Routes;
 /// </remarks>
 public static class ApiRoutes
 {
+    // ── Auth ──────────────────────────────────────────────────────────────────
+
+    /// <summary>Routes for <c>AuthController</c>.</summary>
+    public static class Auth
+    {
+        /// <summary>Controller-level base route: <c>api/auth</c>.</summary>
+        public const string Base = "api/auth";
+
+        /// <summary>POST  api/auth/login — authenticate and get JWT.</summary>
+        public const string Login = "login";
+
+        /// <summary>POST  api/auth/register-worker — register a worker account.</summary>
+        public const string RegisterWorker = "register-worker";
+    }
     // ── Reception ─────────────────────────────────────────────────────────────
 
     /// <summary>Routes for <c>ReceptionController</c>.</summary>

@@ -4,6 +4,7 @@ using Workshop.API.Routes;
 using Workshop.Application.Features.ServiceRequests.Interfaces;
 using Workshop.Domain.Entities;
 using Workshop.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Workshop.API.Controllers;
 
@@ -13,6 +14,7 @@ namespace Workshop.API.Controllers;
 /// which pre-dates the CQRS architecture. All endpoints are wrapped in <see cref="ApiResponse{T}"/>
 /// for consistency. Migration to CQRS handlers is tracked in the backlog.
 /// </summary>
+[Authorize]
 [Route(ApiRoutes.JobCards.Base)]
 public class JobCardsController : BaseApiController
 {

@@ -2,10 +2,12 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Workshop.API.Routes;
 using Workshop.Application.Features.Invoicing.Commands;
+using Microsoft.AspNetCore.Authorization;
 using Workshop.Domain.Enums;
 
 namespace Workshop.API.Controllers;
 
+[Authorize]
 [Route(ApiRoutes.Billing.Base)]
 public sealed class BillingController : BaseApiController
 {
@@ -24,6 +26,7 @@ public sealed class BillingController : BaseApiController
     /// <response code="400">Business rule violation (e.g. request not in Ready_For_Invoicing state).</response>
     /// <response code="404">Service request not found.</response>
     [HttpPost(ApiRoutes.Billing.GenerateInvoice)]
+    [Authorize(Roles = "Accountant,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
@@ -41,6 +44,7 @@ public sealed class BillingController : BaseApiController
     }
 
     [HttpPost(ApiRoutes.Billing.PayInvoice)]
+    [Authorize(Roles = "Accountant,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
@@ -59,6 +63,7 @@ public sealed class BillingController : BaseApiController
     }
 
     [HttpGet(ApiRoutes.Billing.GetById)]
+    [Authorize(Roles = "Accountant,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Application.Features.Invoicing.DTOs.InvoiceDetailsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse), StatusCodes.Status404NotFound)]

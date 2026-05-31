@@ -3,12 +3,14 @@ using Workshop.API.Contracts;
 using Workshop.API.Routes;
 using Workshop.Application.Features.Inventory.Interfaces;
 using Workshop.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Workshop.API.Controllers;
 
 /// <summary>
 /// Manages the parts inventory: listing, adding, consuming, and restocking parts.
 /// </summary>
+[Authorize]
 [Route(ApiRoutes.Inventory.Base)]
 public class InventoryController : BaseApiController
 {

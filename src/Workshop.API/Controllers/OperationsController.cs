@@ -10,6 +10,7 @@ using Workshop.Application.Features.QC.Commands;
 using Workshop.Application.Features.QC.DTOs;
 using Workshop.Application.Interfaces;
 using Workshop.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Workshop.Domain.Common;
 
 namespace Workshop.API.Controllers;
@@ -17,6 +18,7 @@ namespace Workshop.API.Controllers;
 /// <summary>
 /// Handles workshop-floor operations such as generating quotations for service requests.
 /// </summary>
+[Authorize]
 [Route(ApiRoutes.Operations.Base)]
 public sealed class OperationsController : BaseApiController
 {
@@ -89,6 +91,7 @@ public sealed class OperationsController : BaseApiController
     /// Performs Quality Control (QC) for a service request.
     /// </summary>
     [HttpPost(ApiRoutes.Operations.PerformQC)]
+    [Authorize(Roles = "QC_Inspector,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]

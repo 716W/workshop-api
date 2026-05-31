@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Workshop.Domain.Entities;
 using Workshop.Domain.Enums;
 
@@ -201,5 +202,20 @@ public static class DatabaseSeeder
             Amount = 18m,
             CreatedAt = now
         });
+
+        // Seed Business Roles
+        var roles = new[] { "Manager", "Receptionist", "Mechanic", "QC_Inspector", "Inventory_Manager", "Accountant" };
+        var roleIdStart = 1;
+        foreach (var role in roles)
+        {
+            modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Id = roleIdStart.ToString(),
+                Name = role,
+                NormalizedName = role.ToUpper(),
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            });
+            roleIdStart++;
+        }
     }
 }
