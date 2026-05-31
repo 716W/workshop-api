@@ -3,11 +3,14 @@ using Workshop.API.Routes;
 using Workshop.Application.Features.Quotations.Commands;
 using Workshop.Application.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Workshop.API.Controllers;
 
 /// <summary>
 /// Handles customer decisions on quotations: approval and rejection.
 /// </summary>
+[Authorize]
 [Route(ApiRoutes.Quotations.Base)]
 public sealed class QuotationsController : BaseApiController
 {
@@ -33,6 +36,7 @@ public sealed class QuotationsController : BaseApiController
     /// <response code="400">Business rule violation (e.g. quotation is not in Pending state).</response>
     /// <response code="404">Quotation not found.</response>
     [HttpPost(ApiRoutes.Quotations.Approve)]
+    [Authorize(Roles = "Receptionist,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<ApproveQuotationResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<ApproveQuotationResult>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<ApproveQuotationResult>), StatusCodes.Status404NotFound)]
@@ -54,6 +58,7 @@ public sealed class QuotationsController : BaseApiController
     /// <response code="400">Business rule violation (e.g. quotation is not in Pending state).</response>
     /// <response code="404">Quotation not found.</response>
     [HttpPost(ApiRoutes.Quotations.Reject)]
+    [Authorize(Roles = "Receptionist,Manager")]
     [ProducesResponseType(typeof(Contracts.ApiResponse<RejectQuotationResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<RejectQuotationResult>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Contracts.ApiResponse<RejectQuotationResult>), StatusCodes.Status404NotFound)]

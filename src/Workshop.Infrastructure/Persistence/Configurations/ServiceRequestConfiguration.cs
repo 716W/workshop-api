@@ -67,8 +67,5 @@ public sealed class ServiceRequestConfiguration : IEntityTypeConfiguration<Servi
 
               // ── Subtype string properties max-length constraints ──────────────
               // EF Core creates nullable columns automatically for each subtype property.
-              builder.Property<string>(nameof(RepairRequest.RepairDescription)).HasMaxLength(500);
-              builder.Property<string>(nameof(PurchaseRequest.PurchaseDescription)).HasMaxLength(500);
-              builder.Property<string>(nameof(InspectionRequest.InspectionNotes)).HasMaxLength(2000);
        }
 }

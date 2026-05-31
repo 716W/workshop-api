@@ -12,6 +12,20 @@ namespace Workshop.API.Routes;
 /// </remarks>
 public static class ApiRoutes
 {
+    // ── Auth ──────────────────────────────────────────────────────────────────
+
+    /// <summary>Routes for <c>AuthController</c>.</summary>
+    public static class Auth
+    {
+        /// <summary>Controller-level base route: <c>api/auth</c>.</summary>
+        public const string Base = "api/auth";
+
+        /// <summary>POST  api/auth/login — authenticate and get JWT.</summary>
+        public const string Login = "login";
+
+        /// <summary>POST  api/auth/register-worker — register a worker account.</summary>
+        public const string RegisterWorker = "register-worker";
+    }
     // ── Reception ─────────────────────────────────────────────────────────────
 
     /// <summary>Routes for <c>ReceptionController</c>.</summary>
@@ -34,6 +48,12 @@ public static class ApiRoutes
     {
         /// <summary>Controller-level base route: <c>api/requests</c>.</summary>
         public const string Base = "api/requests";
+
+        /// <summary>GET  api/requests — paginated list of service requests.</summary>
+        public const string GetPaged = "";
+
+        /// <summary>GET  api/requests/{id} — full details of a specific service request.</summary>
+        public const string GetById = "{id:guid}";
 
         /// <summary>POST  api/requests/{id}/quotations — generate a quotation for a service request.</summary>
         public const string GenerateQuotation = "{id:guid}/quotations";
@@ -73,6 +93,21 @@ public static class ApiRoutes
 
         /// <summary>POST  api/invoices/{id}/pay — pay a specific invoice.</summary>
         public const string PayInvoice = "invoices/{id:guid}/pay";
+
+        /// <summary>GET  api/invoices/{id} — get full details of an invoice.</summary>
+        public const string GetById = "invoices/{id:guid}";
+    }
+
+    // ── Workers ───────────────────────────────────────────────────────────────
+
+    /// <summary>Routes for <c>WorkersController</c>.</summary>
+    public static class Workers
+    {
+        /// <summary>Controller-level base route: <c>api/workers</c>.</summary>
+        public const string Base = "api/workers";
+
+        /// <summary>GET  api/workers/{id}/commissions — get paginated commissions of a worker.</summary>
+        public const string GetCommissions = "{id:guid}/commissions";
     }
 
     // ── Inventory ─────────────────────────────────────────────────────────────

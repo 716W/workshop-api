@@ -20,6 +20,44 @@
 @mechanicId  = 7a2b4c6d-8e0f-4a1b-9c3d-5e7f9a1b3c5e
 @vehicleId   = 1b3c5e7f-9a2d-4f6e-8b0c-2d4f6a8c0e2f
 
+# Auth Token (Updated dynamically via Scenario 0)
+@authToken = <paste-token-here>
+
+### ============================================================
+###  SCENARIO 0 — Authentication (Phase 17)
+### ============================================================
+#
+# Register a Manager account, then login to get the JWT.
+# The JWT is used to authenticate all subsequent requests.
+# ---------------------------------------------------------------
+
+# 1. Register a Manager (WorkerId is null)
+POST {{baseUrl}}/api/auth/register-worker
+Content-Type: application/json
+
+{
+  "email": "manager@workshop.com",
+  "password": "Password123!",
+  "role": "Manager",
+  "mechanicId": null
+}
+
+###
+
+# 2. Login as Manager to get the Token
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "manager@workshop.com",
+  "password": "Password123!"
+}
+
+###
+# NOTE: Copy the token from the `data` field in the response above 
+# and paste it into the @authToken variable at the top of this file!
+###
+
 # After running Scenario 1, copy the returned `id` field here:
 @serviceRequestId = 00000000-0000-0000-0000-000000000000
 
@@ -45,6 +83,7 @@
 
 POST {{baseUrl}}/api/Reception/create
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "requestType": 0,
@@ -92,6 +131,7 @@ Content-Type: application/json
 
 POST {{baseUrl}}/api/requests/{{serviceRequestId}}/quotations
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "items": [
@@ -159,6 +199,7 @@ Content-Type: application/json
 # Expected Result: 200 OK
 POST {{baseUrl}}/api/Quotations/{{quotationId}}/approve
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 ###
 
@@ -166,6 +207,7 @@ Content-Type: application/json
 # Expected Result: 200 OK
 POST {{baseUrl}}/api/Quotations/{{quotationId}}/reject
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 
 ### ============================================================
@@ -184,6 +226,7 @@ Content-Type: application/json
 # Update Status to Waiting_For_Parts (value: 8)
 PATCH {{baseUrl}}/api/requests/{{serviceRequestId}}/status
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "newStatus": 8,
@@ -208,6 +251,7 @@ Content-Type: application/json
 # First, transition the request to Ready_For_QC (10) manually
 PATCH {{baseUrl}}/api/requests/{{serviceRequestId}}/status
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "newStatus": 10,
@@ -219,6 +263,7 @@ Content-Type: application/json
 # Second, fail the QC inspection
 POST {{baseUrl}}/api/requests/{{serviceRequestId}}/qc
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "isPassed": false,
@@ -230,6 +275,7 @@ Content-Type: application/json
 # Third, transition it back to Ready_For_QC manually (after fixing the issue)
 PATCH {{baseUrl}}/api/requests/{{serviceRequestId}}/status
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "newStatus": 10,
@@ -241,6 +287,7 @@ Content-Type: application/json
 # Fourth, pass the QC inspection
 POST {{baseUrl}}/api/requests/{{serviceRequestId}}/qc
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "isPassed": true,
@@ -264,9 +311,10 @@ Content-Type: application/json
 # Generate the invoice for the service request
 POST {{baseUrl}}/api/requests/{{serviceRequestId}}/invoice
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 ###
-# NOTE: Copy the `invoiceId` from the 200 OK response above
+# NOTE: Copy the `invoiceId` from the 201 Created response above
 # and paste it into the @invoiceId variable below to process payment
 ###
 
@@ -280,6 +328,7 @@ Content-Type: application/json
 # Pay the generated invoice in full (change amount to match total amount)
 POST {{baseUrl}}/api/invoices/{{invoiceId}}/pay
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "amount": 1000.00,
@@ -296,6 +345,7 @@ Content-Type: application/json
 # Release the vehicle and calculate mechanic commission
 POST {{baseUrl}}/api/requests/{{serviceRequestId}}/release
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 ### ==========================================================
 ### PHASE 10: SAD PATHS - HTTP TESTING (VALIDATION & BUSINESS RULES)
@@ -303,8 +353,9 @@ Content-Type: application/json
 
 ### SAD PATH: Invalid Service Request (Validation Error)
 # Expected: 400 Bad Request with Validation Problem Details
-POST {{host}}/api/reception/requests
+POST {{baseUrl}}/api/reception/create
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "requestType": 0,
@@ -319,8 +370,10 @@ Content-Type: application/json
 
 ### SAD PATH: Invalid Quotation (Negative Quantity)
 # Expected: 400 Bad Request with Validation Problem Details
-POST {{host}}/api/operations/requests/{{requestId}}/quotations
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/quotations
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authToken}}
 
 {
   "items": [
@@ -337,8 +390,9 @@ Content-Type: application/json
 
 ### SAD PATH: Reject ALREADY Approved Quotation (Business Logic Error)
 # Expected: 400 Bad Request or 409 Conflict with 'Cannot reject an already approved quotation'
-POST {{host}}/api/operations/quotations/{{quotationId}}/reject
+POST {{baseUrl}}/api/quotations/{{quotationId}}/reject
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "reason": "Change of mind"
@@ -348,9 +402,58 @@ Content-Type: application/json
 
 ### SAD PATH: Release a Vehicle before it's Ready (Business Logic Error)
 # Expected: 400 Bad Request or 409 Conflict
-POST {{host}}/api/reception/requests/{{requestId}}/release
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/release
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {}
+
+###
+
+### ==========================================================
+### PHASE 13: WORKSHOP BOARD QUERIES (READ OPERATIONS)
+### ==========================================================
+
+### GET Paged Service Requests (Workshop Board)
+# Expected: 200 OK with PagedResponse format
+GET {{baseUrl}}/api/requests?pageNumber=1&pageSize=10
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+### GET Paged Service Requests (Filtered by Status, e.g. Open = 0)
+# Expected: 200 OK with PagedResponse format
+GET {{baseUrl}}/api/requests?pageNumber=1&pageSize=10&status=0
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+### GET Service Request Details By ID
+# Expected: 200 OK with full details (Vehicle, Customer, Quotation, Invoice, StatusHistory)
+GET {{baseUrl}}/api/requests/{{serviceRequestId}}
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+### ==========================================================
+### PHASE 16: FINANCE & WORKERS MODULE
+### ==========================================================
+
+### GET Invoice Details By ID
+# Expected: 200 OK with full details (Payments, Service Request, Quotation)
+GET {{baseUrl}}/api/invoices/{{invoiceId}}
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+### GET Worker Commissions
+# Expected: 200 OK with PagedResponse format
+GET {{baseUrl}}/api/workers/{{mechanicId}}/commissions?pageNumber=1&pageSize=10
+Accept: application/json
+Authorization: Bearer {{authToken}}
 
 ###

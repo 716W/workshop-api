@@ -17,10 +17,186 @@ namespace Workshop.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.25")
+                .HasAnnotation("ProductVersion", "8.0.27")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            ConcurrencyStamp = "4c517314-5fa6-4a9b-a414-79aa26b9195a",
+                            Name = "Manager",
+                            NormalizedName = "MANAGER"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            ConcurrencyStamp = "c8f56715-117c-40ae-a4f3-38cfb119d579",
+                            Name = "Receptionist",
+                            NormalizedName = "RECEPTIONIST"
+                        },
+                        new
+                        {
+                            Id = "3",
+                            ConcurrencyStamp = "e489712d-c38b-4fb6-ab7d-3387d0b8d7e9",
+                            Name = "Mechanic",
+                            NormalizedName = "MECHANIC"
+                        },
+                        new
+                        {
+                            Id = "4",
+                            ConcurrencyStamp = "71c1bc56-f877-43df-a7df-f30dded409af",
+                            Name = "QC_Inspector",
+                            NormalizedName = "QC_INSPECTOR"
+                        },
+                        new
+                        {
+                            Id = "5",
+                            ConcurrencyStamp = "89239664-3c0a-4fe5-993a-78e8f4c627f7",
+                            Name = "Inventory_Manager",
+                            NormalizedName = "INVENTORY_MANAGER"
+                        },
+                        new
+                        {
+                            Id = "6",
+                            ConcurrencyStamp = "dd1c5aab-0645-44aa-a28f-172e03749128",
+                            Name = "Accountant",
+                            NormalizedName = "ACCOUNTANT"
+                        });
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Customer", b =>
                 {
@@ -57,6 +233,17 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("f39e31d3-356f-40e1-a070-9856f68c1870"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "john.doe@example.com",
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0100"
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Invoice", b =>
@@ -119,6 +306,22 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("ServiceRequestId");
 
                     b.ToTable("Invoices");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("1b6e21d3-356f-40e1-a070-9856f68c1878"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Discount = 0m,
+                            InvoiceNumber = "INV-2026-0001",
+                            IssuedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            JobCardId = new Guid("e85e21d3-356f-40e1-a070-9856f68c1875"),
+                            ServiceRequestId = new Guid("d75e21d3-356f-40e1-a070-9856f68c1874"),
+                            Status = "Paid",
+                            SubTotal = 55m,
+                            TaxAmount = 8.25m,
+                            TotalAmount = 63.25m
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.JobCard", b =>
@@ -182,6 +385,21 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("VehicleId");
 
                     b.ToTable("JobCards");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("e85e21d3-356f-40e1-a070-9856f68c1875"),
+                            CheckedInAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Replace front brake pads",
+                            EstimatedCost = 55m,
+                            FinalCost = 55m,
+                            JobNumber = "JC-2026-0001",
+                            MechanicId = new Guid("a55e21d3-356f-40e1-a070-9856f68c1872"),
+                            Status = "Released",
+                            VehicleId = new Guid("b15e21d3-356f-40e1-a070-9856f68c1871")
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.JobCardPart", b =>
@@ -216,6 +434,17 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("PartId");
 
                     b.ToTable("JobCardParts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("6a6e21d3-356f-40e1-a070-9856f68c187d"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            JobCardId = new Guid("e85e21d3-356f-40e1-a070-9856f68c1875"),
+                            PartId = new Guid("c65e21d3-356f-40e1-a070-9856f68c1873"),
+                            Quantity = 1,
+                            UnitPriceAtTime = 55m
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Mechanic", b =>
@@ -256,6 +485,18 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Mechanics");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("a55e21d3-356f-40e1-a070-9856f68c1872"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            FirstName = "Mike",
+                            IsAvailable = true,
+                            LastName = "Smith",
+                            PhoneNumber = "555-0200",
+                            Specialization = "Engine Repair"
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Part", b =>
@@ -300,6 +541,19 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Parts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("c65e21d3-356f-40e1-a070-9856f68c1873"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Front ceramic brake pads set",
+                            Name = "Premium Brake Pads",
+                            PartNumber = "PN-12345",
+                            QuantityInStock = 120,
+                            ReorderLevel = 20,
+                            UnitPrice = 55m
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Payment", b =>
@@ -338,6 +592,18 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("InvoiceId");
 
                     b.ToTable("Payments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("2c6e21d3-356f-40e1-a070-9856f68c1879"),
+                            Amount = 63.25m,
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            InvoiceId = new Guid("1b6e21d3-356f-40e1-a070-9856f68c1878"),
+                            PaymentDate = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            PaymentMethod = "Card",
+                            TransactionReference = "TXN-9988776655"
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.PurchaseNeed", b =>
@@ -376,6 +642,18 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("ServiceRequestId");
 
                     b.ToTable("PurchaseNeeds", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("4e6e21d3-356f-40e1-a070-9856f68c187b"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DateRequested = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            JobCardId = new Guid("e85e21d3-356f-40e1-a070-9856f68c1875"),
+                            PartName = "Premium Brake Pads",
+                            Quantity = 10,
+                            ServiceRequestId = new Guid("d75e21d3-356f-40e1-a070-9856f68c1874")
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Quotation", b =>
@@ -410,6 +688,17 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Quotations", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("f95e21d3-356f-40e1-a070-9856f68c1876"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            GrandTotal = 55m,
+                            Notes = "Estimate for front brake pads replacement",
+                            ServiceRequestId = new Guid("d75e21d3-356f-40e1-a070-9856f68c1874"),
+                            Status = 1
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.QuotationItem", b =>
@@ -453,6 +742,19 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("QuotationId");
 
                     b.ToTable("QuotationItems", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("0a6e21d3-356f-40e1-a070-9856f68c1877"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Premium Brake Pads",
+                            Quantity = 1,
+                            QuotationId = new Guid("f95e21d3-356f-40e1-a070-9856f68c1876"),
+                            TotalPrice = 55m,
+                            Type = "Part",
+                            UnitPrice = 55m
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.ServiceRequest", b =>
@@ -482,27 +784,12 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("InspectionNotes")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
                     b.Property<Guid>("MechanicId")
                         .HasColumnType("char(36)");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PurchaseDescription")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<string>("RepairDescription")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("RequestType")
                         .IsRequired()
@@ -566,6 +853,17 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("ServiceRequestId");
 
                     b.ToTable("ServiceRequestStatusHistories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("5f6e21d3-356f-40e1-a070-9856f68c187c"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            NewStatus = "Closed_Success",
+                            Notes = "Completed successfully",
+                            OldStatus = "Open",
+                            ServiceRequestId = new Guid("d75e21d3-356f-40e1-a070-9856f68c1874")
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Vehicle", b =>
@@ -614,6 +912,19 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Vehicles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b15e21d3-356f-40e1-a070-9856f68c1871"),
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            CustomerId = new Guid("f39e31d3-356f-40e1-a070-9856f68c1870"),
+                            Make = "Toyota",
+                            Model = "Camry",
+                            PlateNumber = "XYZ-9876",
+                            VinNumber = "1HGCM82633A",
+                            Year = 2022
+                        });
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.WorkerCommission", b =>
@@ -644,11 +955,92 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                     b.HasIndex("WorkerId");
 
                     b.ToTable("WorkerCommissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("3d6e21d3-356f-40e1-a070-9856f68c187a"),
+                            Amount = 18m,
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            ServiceRequestId = new Guid("d75e21d3-356f-40e1-a070-9856f68c1874"),
+                            WorkerId = new Guid("a55e21d3-356f-40e1-a070-9856f68c1872")
+                        });
+                });
+
+            modelBuilder.Entity("Workshop.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<Guid?>("WorkerId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.InspectionRequest", b =>
                 {
                     b.HasBaseType("Workshop.Domain.Entities.ServiceRequest");
+
+                    b.Property<string>("InspectionNotes")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("VehicleId")
                         .HasColumnType("char(36)");
@@ -668,6 +1060,10 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("Workshop.Domain.Entities.ServiceRequest");
 
+                    b.Property<string>("PurchaseDescription")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasDiscriminator().HasValue("PurchaseOnly");
                 });
 
@@ -675,12 +1071,84 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("Workshop.Domain.Entities.ServiceRequest");
 
+                    b.Property<string>("RepairDescription")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<Guid>("VehicleId")
                         .HasColumnType("char(36)");
 
                     b.HasIndex("VehicleId");
 
                     b.HasDiscriminator().HasValue("Repair");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("d75e21d3-356f-40e1-a070-9856f68c1874"),
+                            CommissionType = "Percentage",
+                            CommissionValue = 15m,
+                            CreatedAt = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            CustomerId = new Guid("f39e31d3-356f-40e1-a070-9856f68c1870"),
+                            Date = new DateTime(2026, 1, 1, 12, 0, 0, 0, DateTimeKind.Utc),
+                            MechanicId = new Guid("a55e21d3-356f-40e1-a070-9856f68c1872"),
+                            Price = 120m,
+                            RequestType = "Repair",
+                            Status = "Closed_Success",
+                            RepairDescription = "Squeaking noise from front wheels",
+                            VehicleId = new Guid("b15e21d3-356f-40e1-a070-9856f68c1871")
+                        });
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Workshop.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Workshop.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Workshop.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Workshop.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Workshop.Domain.Entities.Invoice", b =>

@@ -127,3 +127,42 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
 - [x] **Base API Controller**: Created `BaseApiController` in `src/Workshop.API/Controllers/BaseApiController.cs` inheriting `ControllerBase` with `[ApiController]`. Implements `HandleResult<T>(Result<T>)` → 200/400/404, `HandleCreated<T>(Result<T>, string)` → 201/400/404, and `HandlePagedResult<TItem>(Result<PagedResult<TItem>>)` → 200/400/404. Maps internal `Result<T>` to `ApiResponse<T>`-wrapped HTTP responses. The `GlobalExceptionHandler` (Phase 1.5) remains untouched — it handles uncaught exceptions and returns 500 ProblemDetails.
 - [x] **Refactor Existing Controllers**: Updated `ReceptionController`, `OperationsController`, `QuotationsController`, and `BillingController` to inherit `BaseApiController`. Replaced all hardcoded `[Route(...)]` strings with `ApiRoutes.*` constants. Action methods now call `HandleCreated`, `HandleResult`, or `HandlePagedResult` — zero manual `if (!result.IsSuccess)` branches remaining.
 - [x] **Test File Update**: Verified `tests/Manual/WorkshopScenarios.http` is unchanged — all route URLs (`/api/reception/create`, `/api/requests/{id}/quotations`) are identical after standardization. No edit required. Build: ✅ 0 errors, 0 warnings.
+
+## 📊 Phase 13: Workshop Board Queries (Read Operations)
+- [x] **Query DTOs**: Create `ServiceRequestSummaryDto` (Id, Date, CustomerName, VehiclePlate, RequestType, Status, TotalAmount). Create `ServiceRequestDetailsDto` (aggregating full details: Vehicle info, Customer info, Quotation items, Status History timeline, Invoice details).
+- [x] **List Query**: Create `GetPagedServiceRequestsQuery` (parameters: PageNumber, PageSize, optional Status filter) and Handler. Use the repository or DbContext directly with `AsNoTracking()` to project data into `PagedResponse<ServiceRequestSummaryDto>`.
+- [x] **Details Query**: Create `GetServiceRequestByIdQuery` (parameter: Id) and Handler. Use EF Core `Include()` with `AsNoTracking()` to eagerly load all related entities (History, Quotation, Invoice) and map to `ServiceRequestDetailsDto`.
+- [x] **API Controller**: Add `GET` endpoints to `ReceptionController` or `OperationsController` (using `ApiRoutes` constants). Ensure they return `HandlePagedResult(...)` and `HandleResult(...)` using the base controller.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with `GET` requests to test fetching the paginated list and fetching a specific request by ID.
+
+## 📦 Phase 14: Inventory & Purchasing Module
+- [x] **Parts Queries (Read)**: Create `GetPagedPartsQuery` (returning a paginated list of parts) and `GetPartByIdQuery`.
+- [ ] **Parts Commands (Write)**: Create `CreatePartCommand` and `UpdatePartCommand` (adjusting Name, UnitPrice, Quantity).
+- [ ] **Purchase Needs Queries**: Create `GetPendingPurchaseNeedsQuery` to fetch all `PurchaseNeed` records where `IsResolved == false`.
+- [ ] **Resolve Purchase Need Command**: Create `ResolvePurchaseNeedCommand` (parameter: PurchaseNeedId). The handler must fetch the `PurchaseNeed`, set `IsResolved = true`, find the associated `Part` (or create it if it doesn't exist), increment its `Quantity` by the requested amount, and save changes.
+- [ ] **API Controller**: Create `InventoryController` inheriting from `BaseApiController`. Add endpoints for Parts (GET, POST, PUT) and Purchase Needs (GET `/api/inventory/needs/pending`, PATCH `/api/inventory/needs/{id}/resolve`). Update `ApiRoutes` constants accordingly.
+- [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with endpoints to create a part, list pending needs, and resolve a need.
+
+## 👥 Phase 15: Customers & Vehicles Module
+- [x] **Queries (Read)**: Create `SearchCustomersQuery` (parameter: SearchTerm for Name/Phone) returning a paginated list. Create `GetCustomerHistoryQuery` (parameter: CustomerId) returning the customer's details, their list of owned `Vehicles`, and their past `ServiceRequests` (Summary).
+- [ ] **Commands (Write)**: Create `UpdateCustomerCommand` (adjusting Name, Phone, Email) and `UpdateVehicleCommand` (adjusting PlateNumber, Color, etc.).
+- [ ] **API Controller**: Create `CustomersController` and `VehiclesController` (or combine them) inheriting from `BaseApiController`. Add endpoints: `GET /api/customers` (with search query params), `GET /api/customers/{id}/history`, `PUT /api/customers/{id}`, and `PUT /api/vehicles/{id}`. Update `ApiRoutes` constants accordingly.
+- [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test searching for a customer, fetching their history, and updating their info.
+
+## 💰 Phase 16: Finance & Workers Module
+- [x] **Invoice Queries (Read)**: Create `GetInvoiceByIdQuery` (parameter: InvoiceId). The handler must use `Include()` to fetch the `Invoice`, its `Payments`, and the underlying `ServiceRequest` with its `Quotation` details to return a comprehensive `InvoiceDetailsDto`.
+- [x] **Worker Queries (Read)**: Create `GetWorkerCommissionsQuery` (parameter: WorkerId). The handler should return a `PagedResponse` of `WorkerCommissionDto` (showing the Amount, Date, and related ServiceRequestId).
+- [x] **API Controllers**: 
+    - Update the existing `BillingController` to include `GET /api/invoices/{id}`.
+    - Create a new `WorkersController` inheriting from `BaseApiController`. Add endpoint `GET /api/workers/{id}/commissions`.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` to test fetching an invoice's details and fetching a worker's commission history.
+
+## 🔐 Phase 17: Business-Driven Auth & Identity
+
+- [/] **Identity Setup**: Install ASP.NET Core Identity packages in the `Infrastructure` layer. Configure Identity to use our SQL database. Create a custom `ApplicationUser` that adds a `WorkerId` (Guid?) property to link the login account directly to our `Worker` domain entity.
+- [ ] **Workshop Roles**: Seed the database with business-specific roles: `Manager`, `Receptionist`, `Mechanic`, `QC_Inspector`, `Inventory_Manager`, and `Accountant`.
+- [ ] **JWT Generation**: Implement an `IAuthService` that verifies credentials and generates a JWT. The JWT MUST contain claims for the user's Role AND their `WorkerId` (if assigned).
+- [ ] **Current User Context**: Create an `ICurrentUserService` interface in the Application layer (methods: `GetUserId()`, `GetWorkerId()`, `GetUserRole()`). Implement it in the API/Infrastructure layer using `IHttpContextAccessor` to read claims directly from the JWT.
+- [ ] **Auth Endpoints**: Create an `AuthController` inheriting from `BaseApiController`. Add endpoints: `POST /api/auth/login` and `POST /api/auth/register-worker` (which creates an `ApplicationUser` and links it to an existing `Worker`).
+- [ ] **Protecting Endpoints**: Add `[Authorize(Roles = "...")]` attributes to existing controllers. For example, `POST /api/requests/{id}/qc` should be restricted to `QC_Inspector` or `Manager`.
+- [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a Login request, extract the token, and use it in subsequent requests via `@authToken`.

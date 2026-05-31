@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Workshop.Domain.Entities;
+using Workshop.Infrastructure.Identity;
+using Workshop.Infrastructure.Persistence.Configurations;
 
 namespace Workshop.Infrastructure.Persistence;
 
-public class WorkshopDbContext : DbContext
+public class WorkshopDbContext : IdentityDbContext<ApplicationUser>
 {
     public WorkshopDbContext(DbContextOptions<WorkshopDbContext> options)
         : base(options)
@@ -32,5 +35,7 @@ public class WorkshopDbContext : DbContext
         // Automatically discovers and applies all IEntityTypeConfiguration<T>
         // implementations found in this assembly (Infrastructure layer).
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(WorkshopDbContext).Assembly);
+
+        modelBuilder.SeedData();
     }
 }

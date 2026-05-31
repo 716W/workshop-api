@@ -1,11 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
+using Workshop.API.Contracts;
+using Workshop.API.Routes;
+using Workshop.Application.Features.ServiceRequests.Interfaces;
+using Workshop.Domain.Entities;
 using Workshop.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Workshop.API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class JobCardsController : ControllerBase
+/// <summary>
+/// Manages the lifecycle of job cards on the workshop floor.
+/// NOTE: This controller uses the legacy service-layer pattern (<see cref="IJobCardService"/>)
+/// which pre-dates the CQRS architecture. All endpoints are wrapped in <see cref="ApiResponse{T}"/>
+/// for consistency. Migration to CQRS handlers is tracked in the backlog.
+/// </summary>
+[Authorize]
+[Route(ApiRoutes.JobCards.Base)]
+public class JobCardsController : BaseApiController
 {
     private readonly IJobCardService _jobCardService;
 
@@ -14,101 +25,151 @@ public class JobCardsController : ControllerBase
         _jobCardService = jobCardService;
     }
 
+    /// <summary>Returns all job cards.</summary>
+    /// <response code="200">List returned successfully.</response>
     [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<JobCard>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var jobCards = await _jobCardService.GetAllAsync();
-        return Ok(jobCards);
+        return Ok(ApiResponse<IEnumerable<JobCard>>.Ok(jobCards));
     }
 
-    [HttpGet("{id:guid}")]
+    /// <summary>Returns a single job card by ID.</summary>
+    /// <response code="200">Job card found.</response>
+    /// <response code="404">Job card not found.</response>
+    [HttpGet(ApiRoutes.JobCards.GetById)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var jobCard = await _jobCardService.GetByIdAsync(id);
-        if (jobCard is null) return NotFound();
-        return Ok(jobCard);
+
+        if (jobCard is null)
+            return NotFound(ApiResponse<JobCard>.Fail($"Job card with ID '{id}' was not found."));
+
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpGet("status/{status}")]
+    /// <summary>Returns job cards filtered by status.</summary>
+    /// <response code="200">List returned successfully.</response>
+    [HttpGet(ApiRoutes.JobCards.GetByStatus)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<JobCard>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByStatus(JobCardStatus status)
     {
         var jobCards = await _jobCardService.GetByStatusAsync(status);
-        return Ok(jobCards);
+        return Ok(ApiResponse<IEnumerable<JobCard>>.Ok(jobCards));
     }
 
-    [HttpPost("checkin")]
+    /// <summary>Checks in a vehicle and creates a new job card.</summary>
+    /// <response code="201">Job card created successfully.</response>
+    /// <response code="400">Validation failure.</response>
+    [HttpPost(ApiRoutes.JobCards.CheckIn)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CheckIn([FromBody] CheckInRequest request)
     {
         var jobCard = await _jobCardService.CheckInAsync(
             request.VehicleId, request.Description, request.EstimatedCost);
-        return CreatedAtAction(nameof(GetById), new { id = jobCard.Id }, jobCard);
+
+        var location = Url.Action(nameof(GetById), new { id = jobCard.Id }) ?? string.Empty;
+        return Created(location, ApiResponse<JobCard>.Ok(jobCard, "Job card created successfully."));
     }
 
-    [HttpPut("{id:guid}/inspect")]
+    /// <summary>Starts the inspection phase for a job card.</summary>
+    /// <response code="200">Inspection started.</response>
+    /// <response code="404">Job card not found.</response>
+    [HttpPut(ApiRoutes.JobCards.StartInspect)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> StartInspection(Guid id, [FromBody] StartInspectionRequest request)
     {
         var jobCard = await _jobCardService.StartInspectionAsync(id, request.MechanicId);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/inspect/submit")]
+    /// <summary>Submits the inspection report for a job card.</summary>
+    /// <response code="200">Inspection submitted.</response>
+    [HttpPut(ApiRoutes.JobCards.SubmitInspect)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SubmitInspection(Guid id, [FromBody] SubmitInspectionRequest request)
     {
         var jobCard = await _jobCardService.SubmitInspectionAsync(id, request.InspectionNotes);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/approve")]
+    /// <summary>Approves a job card, moving it to the repair phase.</summary>
+    /// <response code="200">Job card approved.</response>
+    [HttpPut(ApiRoutes.JobCards.Approve)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Approve(Guid id)
     {
         var jobCard = await _jobCardService.ApproveAsync(id);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/repair/start")]
+    /// <summary>Starts the repair work on a job card.</summary>
+    /// <response code="200">Repair started.</response>
+    [HttpPut(ApiRoutes.JobCards.StartRepair)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> StartRepair(Guid id)
     {
         var jobCard = await _jobCardService.StartRepairAsync(id);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/repair/complete")]
+    /// <summary>Completes the repair work on a job card.</summary>
+    /// <response code="200">Repair completed.</response>
+    [HttpPut(ApiRoutes.JobCards.CompleteRepair)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CompleteRepair(Guid id)
     {
         var jobCard = await _jobCardService.CompleteRepairAsync(id);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/qc/pass")]
+    /// <summary>Marks a job card as passing quality control.</summary>
+    /// <response code="200">QC passed.</response>
+    [HttpPut(ApiRoutes.JobCards.QcPass)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> PassQualityCheck(Guid id)
     {
         var jobCard = await _jobCardService.PassQualityCheckAsync(id);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/qc/fail")]
+    /// <summary>Marks a job card as failing quality control with a reason.</summary>
+    /// <response code="200">QC failed and recorded.</response>
+    [HttpPut(ApiRoutes.JobCards.QcFail)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> FailQualityCheck(Guid id, [FromBody] FailQcRequest request)
     {
         var jobCard = await _jobCardService.FailQualityCheckAsync(id, request.Reason);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/invoice")]
+    /// <summary>Marks a job card as invoiced.</summary>
+    /// <response code="200">Marked as invoiced.</response>
+    [HttpPut(ApiRoutes.JobCards.Invoice)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> MarkInvoiced(Guid id)
     {
         var jobCard = await _jobCardService.MarkInvoicedAsync(id);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 
-    [HttpPut("{id:guid}/release")]
+    /// <summary>Releases a vehicle, closing the job card.</summary>
+    /// <response code="200">Vehicle released successfully.</response>
+    [HttpPut(ApiRoutes.JobCards.Release)]
+    [ProducesResponseType(typeof(ApiResponse<JobCard>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Release(Guid id)
     {
         var jobCard = await _jobCardService.ReleaseAsync(id);
-        return Ok(jobCard);
+        return Ok(ApiResponse<JobCard>.Ok(jobCard));
     }
 }
 
-// ── Request DTOs (inline for now, Phase 4.2 will use FluentValidation) ──
+// ── Request DTOs ──
 
 public record CheckInRequest(Guid VehicleId, string Description, decimal EstimatedCost);
 public record StartInspectionRequest(Guid MechanicId);
