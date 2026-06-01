@@ -1,6 +1,6 @@
 # Workshop System Development Plan
 
-Current Status: Phase 12 (API Standardization) COMPLETE ✅
+Current Status: Phase 19 (GitHub README & Documentation Linking) COMPLETE ✅
 
 ## Rules for AI Agent
 
@@ -159,10 +159,31 @@ Current Status: Phase 12 (API Standardization) COMPLETE ✅
 
 ## 🔐 Phase 17: Business-Driven Auth & Identity
 
-- [/] **Identity Setup**: Install ASP.NET Core Identity packages in the `Infrastructure` layer. Configure Identity to use our SQL database. Create a custom `ApplicationUser` that adds a `WorkerId` (Guid?) property to link the login account directly to our `Worker` domain entity.
-- [ ] **Workshop Roles**: Seed the database with business-specific roles: `Manager`, `Receptionist`, `Mechanic`, `QC_Inspector`, `Inventory_Manager`, and `Accountant`.
-- [ ] **JWT Generation**: Implement an `IAuthService` that verifies credentials and generates a JWT. The JWT MUST contain claims for the user's Role AND their `WorkerId` (if assigned).
-- [ ] **Current User Context**: Create an `ICurrentUserService` interface in the Application layer (methods: `GetUserId()`, `GetWorkerId()`, `GetUserRole()`). Implement it in the API/Infrastructure layer using `IHttpContextAccessor` to read claims directly from the JWT.
-- [ ] **Auth Endpoints**: Create an `AuthController` inheriting from `BaseApiController`. Add endpoints: `POST /api/auth/login` and `POST /api/auth/register-worker` (which creates an `ApplicationUser` and links it to an existing `Worker`).
-- [ ] **Protecting Endpoints**: Add `[Authorize(Roles = "...")]` attributes to existing controllers. For example, `POST /api/requests/{id}/qc` should be restricted to `QC_Inspector` or `Manager`.
-- [ ] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a Login request, extract the token, and use it in subsequent requests via `@authToken`.
+- [x] **Identity Setup**: Install ASP.NET Core Identity packages in the `Infrastructure` layer. Configure Identity to use our SQL database. Create a custom `ApplicationUser` that adds a `WorkerId` (Guid?) property to link the login account directly to our `Worker` domain entity.
+- [x] **Workshop Roles**: Seed the database with business-specific roles: `Manager`, `Receptionist`, `Mechanic`, `QC_Inspector`, `Inventory_Manager`, and `Accountant`.
+- [x] **JWT Generation**: Implement an `IAuthService` that verifies credentials and generates a JWT. The JWT MUST contain claims for the user's Role AND their `WorkerId` (if assigned).
+- [x] **Current User Context**: Create an `ICurrentUserService` interface in the Application layer (methods: `GetUserId()`, `GetWorkerId()`, `GetUserRole()`). Implement it in the API/Infrastructure layer using `IHttpContextAccessor` to read claims directly from the JWT.
+- [x] **Auth Endpoints**: Create an `AuthController` inheriting from `BaseApiController`. Add endpoints: `POST /api/auth/login` and `POST /api/auth/register-worker` (which creates an `ApplicationUser` and links it to an existing `Worker`).
+- [x] **Protecting Endpoints**: Add `[Authorize(Roles = "...")]` attributes to existing controllers. For example, `POST /api/requests/{id}/qc` should be restricted to `QC_Inspector` or `Manager`.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a Login request, extract the token, and use it in subsequent requests via `@authToken`.
+
+## 📸 Phase 18: Identity Integration & Media Management
+
+- [x] **Audit Interceptor Update**: Modify the `ISaveChangesInterceptor` (created in Phase 1.5) to inject `ICurrentUserService`. Automatically populate the `CreatedBy` and `UpdatedBy` fields on all `BaseAuditableEntity` records using the currently authenticated user's ID.
+- [x] **Refactor Commands**: Review commands like `UpdateServiceRequestStatusCommand` and `PerformQCCommand`. Neither DTO contains `WorkerId`/`UserId` — handlers already use only domain data. No refactoring needed.
+- [x] **Media Entity**: Create an `Attachment` domain entity (Id, ServiceRequestId, FileName, FilePath, ContentType, UploadedAt, UploadedBy).
+- [x] **File Upload Service**: Create an `IFileStorageService` and implement it to save files locally in a `wwwroot/uploads` directory.
+- [x] **API Endpoint**: Create `POST /api/requests/{id}/attachments` in the `OperationsController` that accepts `IFormFile`. It must save the file, create the `Attachment` record, and return the file URL.
+- [x] **Testing**: Update `tests/Manual/WorkshopScenarios.http` with a Phase 18 section with multipart upload instructions.
+
+## 📖 Phase 19: GitHub README & Documentation Linking
+
+- [x] **Root README Construction**: Create a professional `README.md` in the root directory. It must include:
+    - **Project Title & Badges**: E.g., Workshop Management System API.
+    - **Overview**: A brief summary of the business problem it solves.
+    - **Architecture**: Highlight the use of Pragmatic Clean Architecture, avoiding over-engineering. Mention the use of CQRS, MediatR, and Domain Events.
+    - **Tech Stack**: .NET 8, EF Core, MySQL, Identity, etc.
+    - **Modules Overview**: Briefly list the 4 main modules (Workshop Board, Inventory, Customers, Finance/Auth).
+- [x] **Table of Contents & Deep Links**: Add a section in the `README.md` named "📚 In-Depth Documentation". Create markdown hyperlinks pointing to the files in our `docs/` folder (e.g., `[Workshop Lifecycle & Business Flows](./docs/01-Business-Flows/workshop-lifecycle.md)`).
+- [x] **Docs Refinement (Cross-Linking)**: Go into the existing markdown files inside the `docs/` folder (or create dummy ones if they are missing based on Phase 11). Add a `[⬅️ Back to Main README](../../README.md)` link at the top of each file so users can easily navigate back and forth.
+- [x] **Getting Started Section**: Add clear instructions in the root `README.md` on how to clone the repo, update the database using `dotnet ef database update`, and run the project.
