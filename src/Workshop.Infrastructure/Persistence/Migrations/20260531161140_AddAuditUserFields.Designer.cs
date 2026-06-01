@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Workshop.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using Workshop.Infrastructure.Persistence;
 namespace Workshop.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WorkshopDbContext))]
-    partial class WorkshopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260531161140_AddAuditUserFields")]
+    partial class AddAuditUserFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,42 +54,42 @@ namespace Workshop.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "9af5e13d-66e9-4558-9d7f-8b0e5b81f2a6",
+                            ConcurrencyStamp = "81e3a4c5-5dc1-455c-a242-613b4376b1fd",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "42c81d8a-7174-474b-91a0-b9f4cbd4eb55",
+                            ConcurrencyStamp = "e625ced8-194a-4e31-a855-34d26de00b4f",
                             Name = "Receptionist",
                             NormalizedName = "RECEPTIONIST"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "0a9aa0c2-13e2-43b7-af05-183ae9b2ebc9",
+                            ConcurrencyStamp = "2d50cdff-7476-442a-8ffd-a373392808fc",
                             Name = "Mechanic",
                             NormalizedName = "MECHANIC"
                         },
                         new
                         {
                             Id = "4",
-                            ConcurrencyStamp = "e09d4600-e22d-4485-86b3-189e7224ba7e",
+                            ConcurrencyStamp = "0bf6091f-1bf7-4e2b-804f-28f14ed8970a",
                             Name = "QC_Inspector",
                             NormalizedName = "QC_INSPECTOR"
                         },
                         new
                         {
                             Id = "5",
-                            ConcurrencyStamp = "4c1cd981-6e89-4e8b-ba19-20cdf72ffba1",
+                            ConcurrencyStamp = "d15b2ca2-40d2-4e6d-a212-c221e1c7f249",
                             Name = "Inventory_Manager",
                             NormalizedName = "INVENTORY_MANAGER"
                         },
                         new
                         {
                             Id = "6",
-                            ConcurrencyStamp = "fb60d5eb-779b-4ecc-bdf7-12c2219b9648",
+                            ConcurrencyStamp = "b6a3fe24-3ee1-4825-b4c3-4686d5a6de05",
                             Name = "Accountant",
                             NormalizedName = "ACCOUNTANT"
                         });

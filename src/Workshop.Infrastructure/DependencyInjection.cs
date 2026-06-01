@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Workshop.Infrastructure.Identity;
 using Workshop.Application.Interfaces;
+using Workshop.Infrastructure.Services;
 
 namespace Workshop.Infrastructure;
 
@@ -65,6 +66,9 @@ public static class DependencyInjection
         // Auth Services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        // File Storage
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         return services;
     }

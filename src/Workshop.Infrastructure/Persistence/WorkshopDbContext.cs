@@ -27,6 +27,7 @@ public class WorkshopDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ServiceRequestStatusHistory> ServiceRequestStatusHistories => Set<ServiceRequestStatusHistory>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<WorkerCommission> WorkerCommissions => Set<WorkerCommission>();
+    public DbSet<Attachment> Attachments => Set<Attachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

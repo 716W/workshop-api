@@ -457,3 +457,64 @@ Accept: application/json
 Authorization: Bearer {{authToken}}
 
 ###
+
+### ==========================================================
+### PHASE 18: IDENTITY INTEGRATION & MEDIA MANAGEMENT
+### ==========================================================
+#
+# Business Context:
+#   After a repair is logged, a technician uploads vehicle damage
+#   photos as evidence. These are stored in wwwroot/uploads/ and
+#   the metadata is recorded in the Attachments table.
+#
+# NOTE ON MULTIPART/FORM-DATA IN .HTTP FILES:
+#   The VS Code REST Client supports basic multipart uploads but
+#   requires the file to exist locally. The syntax is shown below.
+#   For a richer experience (file picker, live response preview),
+#   use Swagger UI at: http://localhost:5085/swagger
+#   → OperationsController → POST /api/requests/{id}/attachments
+#   → Click "Try it out" → upload a file from your disk.
+#
+# Alternatively, use Postman:
+#   POST http://localhost:5085/api/requests/{{serviceRequestId}}/attachments
+#   Authorization: Bearer <token>
+#   Body: form-data → key: "file" (type: File) → select any .jpg or .pdf
+#
+# ---------------------------------------------------------------
+
+### PHASE 18 — Upload Vehicle Damage Photo
+# Requires VS Code REST Client ≥ 0.25 with a real file on disk.
+# Replace /path/to/damage_photo.jpg with an actual file path.
+# Expected: 201 Created  { "data": "<attachmentId>", "isSuccess": true }
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/attachments
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary7MA4YWxkTrZu0gW
+
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="damage_photo.jpg"
+Content-Type: image/jpeg
+
+< /path/to/damage_photo.jpg
+------FormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### PHASE 18 — Verify Audit Fields (CreatedBy populated by interceptor)
+# After uploading, fetch the service request details.
+# The CreatedBy field on ServiceRequest should show the authenticated user's ID.
+# Expected: 200 OK with full details including attachments context
+GET {{baseUrl}}/api/requests/{{serviceRequestId}}
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+### PHASE 18 — Test: Upload with No File (Sad Path)
+# Expected: 400 Bad Request — "No file was provided or the file is empty."
+POST {{baseUrl}}/api/requests/{{serviceRequestId}}/attachments
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary7MA4YWxkTrZu0gW
+
+------FormBoundary7MA4YWxkTrZu0gW--
+
+###

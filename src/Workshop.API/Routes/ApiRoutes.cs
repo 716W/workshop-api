@@ -63,6 +63,9 @@ public static class ApiRoutes
 
         /// <summary>POST  api/requests/{id}/qc — perform quality control check.</summary>
         public const string PerformQC = "{id:guid}/qc";
+
+        /// <summary>POST  api/requests/{id}/attachments — upload a damage/evidence photo.</summary>
+        public const string UploadAttachment = "{id:guid}/attachments";
     }
 
     // ── Quotations ────────────────────────────────────────────────────────────
