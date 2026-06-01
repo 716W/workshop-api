@@ -8,6 +8,7 @@ using Workshop.Application.Features.ServiceRequests.Queries;
 using Workshop.Application.Features.ServiceRequests.DTOs;
 using Workshop.Application.Features.QC.Commands;
 using Workshop.Application.Features.QC.DTOs;
+using Workshop.Application.Features.Attachments.Commands;
 using Workshop.Application.Interfaces;
 using Workshop.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -27,19 +28,22 @@ public sealed class OperationsController : BaseApiController
     private readonly ICommandHandler<PerformQCCommand, Guid> _performQCHandler;
     private readonly IRequestHandler<GetPagedServiceRequestsQuery, Result<PagedResult<ServiceRequestSummaryDto>>> _getPagedRequestsHandler;
     private readonly IRequestHandler<GetServiceRequestByIdQuery, Result<ServiceRequestDetailsDto>> _getRequestByIdHandler;
+    private readonly IMediator _mediator;
 
     public OperationsController(
         ICommandHandler<GenerateQuotationCommand, QuotationGeneratedResult> generateQuotationHandler,
         ICommandHandler<UpdateServiceRequestStatusCommand, Guid> updateStatusHandler,
         ICommandHandler<PerformQCCommand, Guid> performQCHandler,
         IRequestHandler<GetPagedServiceRequestsQuery, Result<PagedResult<ServiceRequestSummaryDto>>> getPagedRequestsHandler,
-        IRequestHandler<GetServiceRequestByIdQuery, Result<ServiceRequestDetailsDto>> getRequestByIdHandler)
+        IRequestHandler<GetServiceRequestByIdQuery, Result<ServiceRequestDetailsDto>> getRequestByIdHandler,
+        IMediator mediator)
     {
         _generateQuotationHandler = generateQuotationHandler;
         _updateStatusHandler = updateStatusHandler;
         _performQCHandler = performQCHandler;
         _getPagedRequestsHandler = getPagedRequestsHandler;
         _getRequestByIdHandler = getRequestByIdHandler;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -141,5 +145,47 @@ public sealed class OperationsController : BaseApiController
         var result = await _getRequestByIdHandler.Handle(query, ct);
 
         return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Uploads a vehicle damage photo or evidence file and associates it with the service request.
+    /// </summary>
+    /// <param name="id">The service request ID to attach the file to.</param>
+    /// <param name="file">The file to upload (multipart/form-data).</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>HTTP 201 Created with the new attachment ID and a Location URL to access the file.</returns>
+    /// <response code="201">File uploaded and attachment record created.</response>
+    /// <response code="400">No file provided or business rule violation.</response>
+    /// <response code="404">Service request not found.</response>
+    [HttpPost(ApiRoutes.Operations.UploadAttachment)]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Contracts.ApiResponse<Guid>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UploadAttachment(
+        [FromRoute] Guid id,
+        IFormFile file,
+        CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(Contracts.ApiResponse<Guid>.Fail("No file was provided or the file is empty."));
+
+        // Unpack IFormFile → raw stream before passing to the framework-agnostic command.
+        await using var stream = file.OpenReadStream();
+
+        var command = new UploadAttachmentCommand(
+            ServiceRequestId:  id,
+            FileStream:        stream,
+            OriginalFileName:  file.FileName,
+            ContentType:       file.ContentType);
+
+        var result = await _mediator.Send(command, ct);
+
+        // Build a public URL so the caller can immediately access the uploaded file.
+        var fileUrl = result.IsSuccess
+            ? $"{Request.Scheme}://{Request.Host}/{result.Value}"
+            : string.Empty;
+
+        return HandleCreated(result, fileUrl);
     }
 }

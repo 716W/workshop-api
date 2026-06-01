@@ -67,6 +67,7 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Serve wwwroot/uploads/... so uploaded photos are directly accessible
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
